@@ -1,0 +1,10 @@
+project:
+  type: default
+  output-dir: ../output
+  render:
+    - job_satisfaction.qmd
+    - appendix.qmd
+    - title_page.qmd
+
+execute:
+  freeze: false

@@ -1,0 +1,333 @@
+---
+title: "Are Non-Cognitive Skills Rewarded with Job Satisfaction Net of Pay? A Cross-Country Analysis of Well-Being at Work in High-Income Economies"
+lang: en-US
+bibliography: references.bib
+csl: apa.csl
+format:
+  docx:
+    reference-doc: reference.docx
+    toc: false
+    number-sections: true
+    fig-dpi: 300
+  pdf:
+    documentclass: article
+    pdf-engine: xelatex
+    mainfont: "Times New Roman"
+    sansfont: "Helvetica Neue"
+    fontsize: 11pt
+    papersize: a4
+    geometry: margin=2.4cm
+    number-sections: true
+    toc: false
+    fig-pos: "H"
+    fig-width: 8
+    fig-height: 5
+    colorlinks: true
+    link-citations: true
+    include-in-header:
+      text: |
+        \usepackage{float}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{multirow}
+        \usepackage{wrapfig}
+        \usepackage{colortbl}
+        \usepackage{pdflscape}
+        \usepackage{tabu}
+        \usepackage{threeparttable}
+        \usepackage{threeparttablex}
+        \usepackage[normalem]{ulem}
+        \usepackage{makecell}
+        \usepackage{xcolor}
+        \usepackage{caption}
+        \captionsetup{font=small}
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    embed-resources: true
+    fig-width: 8
+    fig-height: 5
+crossref:
+  fig-prefix: Fig.
+  fig-title: Fig.
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+source("_setup.R")
+```
+
+# Abstract {.unnumbered}
+
+{{< include _abstract.qmd >}}
+
+**Keywords** Job satisfaction; Quality of working life; Subjective well-being; Non-cognitive skills; Causal mediation; PIAAC
+
+# Introduction {#sec-intro}
+
+Two employees do the same job for the same pay and rate it differently. Job satisfaction is one of the main indicators through which statistical offices, international organizations, and employers assess the quality of working life [@cazes2015], whereas some scholars even treat it as one of the main components of subjective well-being [@sousa-poza2000; @vanpraag2003; @judgeklinger2008; @bowling2010]. These ratings also reflect workers' dispositions. The OECD's analysis of the 2023 Survey of Adult Skills (PIAAC) finds that emotionally stable and extraverted adults are more satisfied with their jobs in nearly every participating country, and these associations "persist, albeit weaker" after accounting for wages, sector, and occupation [@oecd2025, p. 69]. If workers are more satisfied because they hold better jobs, satisfaction still measures the job. If personality affects how workers view and describe the same job, their ratings also reflect temperament. Satisfaction comparisons between groups with different personality compositions then partly reflect those differences. The distinction matters because job satisfaction is often read as evidence of job quality, while the same score may combine the conditions of a job with the worker's way of evaluating them.
+
+Economists have estimated the wage returns to personality traits and their payoff in employment and occupation [@heckman2006; @almlund2011; @cobbclarkschurer2012]. Human capital theory treats personality traits as non-cognitive skills with a productive role [@humphries2017]. In the definition of @green2013, skills are productive, socially determined, and expandable through training and development. @cunha2007 model how such skills are produced over the life cycle, with skills acquired early raising the productivity of later investment (dynamic complementarity). Job satisfaction rarely appears in this body of work, although it predicts quitting and @freeman1978 treated it as an economic variable. Psychological and OECD studies of the personality gradient in satisfaction [@judge2002; @oecd2025] do not compare subjective and objective rewards in the same data. They also do not test why a trait is associated with higher satisfaction. Workers with the trait may hold better jobs, react differently to the same conditions, or report the same conditions differently. The source of this established correlation between personality and job satisfaction is not yet clear.
+
+The study uses PIAAC data from `r nC` high-income countries to examine the sources of the satisfaction premium and contributes to the literature in three ways. First, the subjective reward to non-cognitive skills is measured with the same instrument across national contexts. The *subjective reward* is defined as the association between a trait and job satisfaction at a given level of pay and background characteristics, and pay itself is the objective reward. Second, the study tests whether the premium reflects sorting into better jobs or a different view of the same job. Workers with productive non-cognitive skills may hold better jobs (*exposure*), respond differently to the same working conditions (*reactivity*), or report the same conditions differently (*appraisal*) [@bolger1995]. Earlier studies tested these routes only with diary data from single organizations and could not show whether workers with different traits hold different jobs. Finally, I estimate what the satisfaction gap between high and low occupational groups would be if the groups did not differ in personality profiles. This counterfactual gap splits the observed gap into the part accounted for by non-cognitive skills and the part accounted for by pay and working conditions.
+
+Causal mediation analysis [@imai2010] is combined with a comparison of workers in the same job, defined by occupation and industry within each country. The mediation analysis gives the share of each premium that varies with pay and reported conditions. The within-job comparison is used to test whether the traits are associated with the jobs themselves or with how workers report them. The premiums are tested against omitted-variable bias [@oster2019], and the mediated parts are tested against unobserved confounding [@imai2010b]. To check whether the premiums reflect only a general tendency to report one's life favorably, I also hold life satisfaction fixed.
+
+The results suggest that emotional stability has the largest premium, `r f2(kmean("EMOS"))` points on the 1–5 scale per standard deviation. The premiums for extraversion and agreeableness are `r f2(kmean("EXTR"))` and `r f2(kmean("AGRE"))`, respectively. Conscientiousness has a small premium. Open-mindedness has none. Occupation changes these premiums by less than 5%. With pay held fixed, the seven reported working conditions and skill underuse account for a median of `r { u <- acm("all", "EMOS"); u <- u[u$total_p < .05, ]; pc(median(u$share)) }`% of the emotional-stability premium. Workers with different traits hold similar jobs but report them differently. Within the same occupation and industry, less stable workers report more demands and also more resources than their colleagues. The premium is concentrated in low depression. Personality composition accounts for about a quarter of the satisfaction gap between high- and low-occupational groups.
+
+The results matter for the use of job satisfaction as a quality-of-life indicator. Satisfaction gaps between groups of workers are often read as gaps in job quality, for example between women and men [@clark1997]. If part of satisfaction reflects how people appraise their jobs, these gaps also reflect who the workers are. Where personality is measured, researchers can estimate this component alongside the gap.
+
+# Background and hypotheses {#sec-hyp}
+
+Organizational psychology established that job attitudes have a dispositional component. Workers' satisfaction persists across job changes [@staw1985]. In the meta-analysis of @judge2002, the Big Five correlate with satisfaction at 0.29 for emotional stability, 0.26 for conscientiousness, 0.25 for extraversion, 0.17 for agreeableness, and 0.02 for openness. These estimates are bivariate correlations in heterogeneous samples. Because these estimates do not hold pay or occupation fixed, they cannot show whether satisfied workers earn more or hold better jobs. They also do not show how the association arises.
+
+Economists have estimated the wage returns to these traits and their payoffs in employment and occupational attainment [@heckman2006; @almlund2011; @cobbclarkschurer2012]. The wage returns are modest, a few percent of wages per standard deviation. Few of these studies examined job satisfaction. With the 2023 Survey of Adult Skills, the OECD extended the descriptive evidence across countries [@oecd2025]. In its estimates, a one-standard-deviation increase in emotional stability is associated with a 6-percentage-point higher probability of high job satisfaction, and extraversion with 4 points, which is comparable to literacy. After accounting for wages and job characteristics, the association with literacy is no longer significant, whereas the associations with personality remain. Agreeableness is positive in 14 countries and conscientiousness in 10, while openness shows mixed results. The report interprets this as person–environment fit [@kristofbrown2005], or as emotion regulation, without testing either explanation. A recent study of young workers in one country reaches a similar conclusion, finding that the premium remains after controlling for wages and job characteristics [@avanesian2026]. These studies do not compare subjective and objective rewards, and they do not ask the question that follows from the theory of compensating differentials [@rosen1986]. If a trait is associated with satisfaction that the market does not pay for, the question is whether workers with the trait hold better jobs or experience the same job differently.
+
+@bolger1995 distinguish differential *exposure* to stressors from differential *reactivity* to them. A third route, differential *appraisal*, comes from @watson1984 on negative affectivity and refers to the tendency to report the same situation differently. Researchers tested these routes in diary studies and samples from single organizations. Such data contain no information on sorting across jobs, and the same person reports both stressors and strain. Some studies therefore partial out negative affectivity as a nuisance, while others treat it as a cause [@spector2000]. Representative data with occupation codes allow more comparisons. Job conditions are measured as the average report of workers in the same occupation and industry, and each worker's report is compared with that average. Sorting across occupations becomes observable, as does the size of the premium relative to pay. Measurement choices have been linked to quitting [@pelly2023] and job-quality rankings [@stephens2025]. Perceived working conditions have also been studied as informative without causal identification [@meyer2026]. The study asks whether a trait's satisfaction premium is a *subjective* reward beyond the objective one. It also examines whether the premium comes from the jobs people hold or from how they react to and perceive their jobs.
+
+> **H1 (Subjective reward).** Holding pay fixed, emotional stability, extraversion, and agreeableness are associated with higher job satisfaction. The direction for conscientiousness and open-mindedness is unclear; their bivariate correlations are positive [@judge2002], but their adjusted associations vary across countries [@oecd2025].
+
+The first route is *exposure*. The job demands–resources model describes job quality through two groups of conditions [@karasek1979; @bakker2007]. Demands such as time pressure, repetitive or physically strenuous work, and constant change drain workers. Resources such as autonomy and learning, or support and voice, motivate them. Emotionally stable workers may avoid high-strain jobs, and extraverts may find jobs with more contact and autonomy. If so, part of the premium moves with job conditions.
+
+> **H2 (Exposure).** Part of the association between personality and satisfaction moves with reported working conditions. Emotional stability is associated with lower reported demands (H2a). Extraversion is associated with more resources, particularly autonomy and voice, as well as learning and social tasks (H2b).
+
+The second route is *appraisal*. Negative affectivity is the core of low emotional stability. It colors reports of both stressors and satisfaction [@watson1984], and dispositional affect persists in job attitudes over long periods [@staw1985; @judge2001]. Under this account, traits predict how workers *report* their conditions relative to others in the same job, while the conditions themselves do not differ. The premium should then be concentrated in the affective component of the trait. Appraisal and sorting also make different predictions. A worker in a worse job than colleagues should report higher demands and fewer resources. A worker for whom the same work feels like more of everything should report more demands and also more resources.
+
+> **H3 (Appraisal).** (a) Trait associations with reported conditions are concentrated in workers' deviations from their occupational-group means and are small in the group means. The part of the premium that moves with conditions moves with the deviations. Emotional stability predicts lower reports of demands and resources. (b) Within emotional stability, the premium is carried mainly by low depression. The difference between the depression and anxiety coefficients is distinguishable from zero.
+
+The third route is *reactivity*. Trait activation theory holds that a trait matters where the situation calls for it [@tett2003]. Emotional stability should cushion the cost of demands, and social tasks should reward extraverts. Learning should reward the open-minded, and underuse should frustrate them. Autonomy should matter more to the conscientious, and support should matter more to the agreeable.
+
+> **H4 (Reactivity).** Traits moderate the association between job conditions and satisfaction. Emotional stability weakens the cost of time pressure, repetitive work, and change (H4a). Extraversion strengthens the benefit of social tasks (H4b). Openness strengthens the benefit of learning and the cost of skill underuse (H4c). Conscientiousness strengthens the benefit of autonomy (H4d). Agreeableness strengthens the benefit of support (H4e).
+
+Personality affects satisfaction comparisons between groups of workers only when the groups differ enough in personality composition, regardless of the route. Managers and professionals are on average more emotionally stable and extraverted than workers in operative and elementary occupations. Their satisfaction gap should therefore narrow when both groups have the same personality distribution. Because the premiums are about a tenth of a point per standard deviation, this reduction should be smaller than the one from adjusting for pay and conditions. I chose this comparison before seeing the result. It is the widest contrast in occupational skill level that still leaves enough employees in each group in most countries.
+
+> **H5 (Composition).** Within each country, the satisfaction gap between the high occupational group (ISCO 1–2) and the low one (ISCO 8–9) narrows when both groups are standardized to a common personality distribution. It narrows further when pay and reported conditions are adjusted for.
+
+The five hypotheses run from reward size to its consequences. H1 concerns reward size. H2 to H4 concern its source, and H5 concerns its consequences for comparisons between groups of workers. The data and the empirical strategy follow the same order.
+
+# Data {#sec-data}
+
+I use the public-use files of the second cycle of PIAAC, fielded in 2022–2023 in representative samples of adults [@oecd2024]. Employed respondents rate their satisfaction with their current job on a five-point scale. The main outcome is the 1–5 score (5 = extremely satisfied). The Big Five are measured with the 15-item BFI-2-XS and released as national z-scores, so a coefficient is the change in satisfaction per within-country standard deviation of the trait. In `r n_fac` countries, the 30-item BFI-2-S is also released, with three facets per trait [@soto2017]. The sample covers employees aged 25–65 in the `r nC` countries that release these variables. Only `r pc(min(ns_share))`% to `r pc(max(ns_share))`% of employees are neutral or dissatisfied (Online Resource 1, Table A8). Samples and module coverage by country are in Table A9. Pay is the within-country decile of hourly earnings including bonuses, released for employees in `r n_pay` of the `r nC` countries. `r flagname` do not release an employee earnings measure. These three countries enter without the pay control and are marked with † in all figures. Respondents with a missing decile in a pay country are kept with a missing-pay indicator. Complete-case results are in Table A2.
+
+@tbl-conditions lists the reported job conditions. Because the appraisal hypothesis concerns the gap between a job and its report, I use the workers' own reports. Background controls are age band, sex, education, birthplace, parental education, and numeracy (all ten plausible values). Where stated, I also control for occupation, contract type, weekly hours, firm size, sector, and supervisory duties.
+
+```{r}
+#| label: tbl-conditions
+#| tbl-cap: "Reported job conditions: items and coverage"
+tab <- data.frame(Measure = c("Time pressure", "Repetitive tasks", "Physical work", "Change in work environment", "Autonomy", "Learning at work", "Social tasks", "Support", "Voice", "Skill underuse"),
+  Type = c("Demand", "Demand", "Demand", "Demand", "Resource", "Resource", "Resource / demand", "Resource", "Resource", "Mismatch"),
+  Items = c("Working to tight deadlines or at very high speed (1 none of the time – 5 all of the time)",
+    "Short repetitive tasks (yes/no)", "Working physically for a long period (frequency 1–5)",
+    "Number of areas in which the working environment changed (machinery, ICT, methods, outsourcing, products, client contact; 0–6)",
+    "Choose or change the sequence of tasks, how to work, speed of work, working hours (1–5, mean)",
+    "Learning from colleagues, learning by doing, keeping up to date (frequency, mean)",
+    "Sharing information, teaching, presenting, dealing with clients, influencing, negotiating (frequency, mean)",
+    "Assistance available with workload; frequency of help from supervisor and co-workers (0–1)",
+    "Involved in improving work organization; able to apply own ideas (reversed frequency, mean)",
+    "Skills higher than the job requires, vs matched"),
+  Countries = c(rep(nC, 7), n_ext, n_ext, nC), check.names = FALSE)
+fin(kb(tab, row.names = FALSE, align = "lllr"), wrap = list(`3` = "9cm"), "Each condition is standardized within country (weighted). Support and voice come from a module not fielded in Canada, Finland, Germany, Ireland, Lithuania, and Switzerland. The core set used in every country includes the first seven conditions and underuse of skills.")
+```
+
+# Empirical strategy {#sec-strategy}
+
+The empirical strategy follows the hypotheses. The pay-adjusted satisfaction premium of each trait is estimated first (H1). The premium is then decomposed through pay and reported job conditions (H2), and occupational-group means are separated from individual deviations (H3). Trait-by-condition interactions (H4) and the occupational-group counterfactual (H5) come last.
+
+Every model is estimated separately in each country. For worker $i$ in country $c$, satisfaction $S_{ic}$ is regressed on the five traits $T_{kic}$, the pay decile, and the background controls $X_{ic}$: $$
+S_{ic} = \alpha_c + \textstyle\sum_k \beta_{kc} T_{kic} + \pi_c' \text{Pay}_{ic} + X_{ic}'\gamma_c + \varepsilon_{ic}.
+$$ The coefficient $\beta_{kc}$ is the *pay-adjusted* association of trait $k$ with satisfaction, and H1 concerns it. It includes any part of the premium that arises because the trait leads into different occupations. Adding occupation gives the pay-and-occupation-adjusted association. Adding all reported conditions gives the *direct* association.
+
+For H2, the product-of-coefficients decomposition of causal mediation analysis is used [@imai2010], as shown in @fig-schematic. For each condition $M$, a mediator model gives the path $a_k$ from the trait to the condition. An outcome model that adds $M$ gives the path $b$ from the condition to satisfaction and the direct coefficient $c'_k$. Both models include the traits, pay, and controls. The product $a_k b$ is the part of $\beta_{kc}$ that moves with $M$. This product is the indirect effect. Because conditions are correlated, the main estimate is the joint decomposition $\sum_m a_{km} b_m$ from one outcome model with all conditions [@vanderweele2014]. It is estimated for the core set of seven conditions and skill underuse in all `r nC` countries and for an extended set with support and voice in the `r n_ext` countries that measure them. Pay is a control in every mediation model and the mediator in a separate model without the pay decile.
+
+```{r}
+#| label: fig-schematic
+#| fig-cap: "The decomposition. A trait is associated with satisfaction at the same reported condition (c′, the direct path) and through its association with a job condition (a) that is itself associated with satisfaction (b). The product a × b is the part of the premium that moves with the condition. The paths are associations. Each reported condition is further split into the mean for the worker's occupational group and the worker's deviation from it."
+#| fig-height: 3.2
+#| fig-width: 7
+draw_schematic()
+```
+
+A causal reading of the indirect and direct parts requires that no unobserved factor affects both the condition and satisfaction once traits and controls are held fixed (sequential ignorability). The same person reports traits, conditions, and satisfaction at the same time. A common mood or a general disposition to describe one's situation favorably would violate this assumption. H3 tests for this disposition. Pay and the other controls may also partly be consequences of the trait [@bartram2021]. The decomposition is therefore interpreted as describing which conditions move with which traits and how much of the premium they account for. Adult personality is fairly stable [@cobbclarkschurer2012]. This stability limits reverse causality from the job to the trait reports. Four sensitivity analyses are added. For each indirect effect, the error correlation at which it would vanish is reported [@imai2010b]. For each premium, the coefficient that would remain if unobservables mattered as much as the observed controls is estimated [@oster2019]. The premium is also estimated conditional on life satisfaction. A last test looks for the tenure gradient that a gradual effect of the job on trait reports would produce.
+
+For H3, each reported condition is split into the weighted leave-one-out mean among workers in the same group and the worker's deviation from that mean. Groups are country × finest released occupation × industry section, with a fallback to occupation alone where a group has fewer than ten other members. The group mean is the average report in that kind of job. Without employer-level data, occupation-by-industry groups are the closest available reference point for the conditions attached to a type of work. Because workers in a group can still hold different jobs, the deviation contains real differences in conditions and the worker's reporting style. The group mean also reflects how people in the group tend to report. The split therefore cannot, by itself, separate the view of a job from unmeasured differences between jobs. It shows whether the trait associations are found in the group means or in the deviations. The trait coefficients on the group means are tested for *equivalence* to zero with two one-sided tests and a margin of `r eq_margin_cell` SD. This margin is less than half the typical coefficient on the deviations, so a group-mean association inside it would be small next to the deviation association. I also test whether traits predict deviations in reported *resources* and demands. Table A5 reports group definitions, sizes, and reliabilities. Table A6 reports re-estimates with stricter group definitions. For H3b, each trait is replaced with its three facets in the `r n_fac` countries that release them, and the depression–anxiety difference is tested directly.
+
+For H4, the eight hypothesized products and three placebo products with no proposed mechanism are added to each country's model with all conditions. Traits are centered and conditions standardized, so each product is the change in a condition's satisfaction slope per standard deviation of the trait. A product within ±`r eq_margin_int` points of zero, half a condition's own slope, is treated as equivalent to zero. Inside this margin, workers one standard deviation apart in the trait differ by less than half in how much the condition matters to them. Cross-sectional interactions compare different workers in different conditions, so they say little about how one worker would react to a change.
+
+For H5, two groups are compared in each country. The high group is managers and professionals (ISCO 1–2). The low group is plant and machine operators and workers in elementary occupations (ISCO 8–9). Where only the four-level occupational skill variable is released, its top and bottom levels are compared. Satisfaction is regressed on the five traits separately in each group, and each group's mean is predicted at the pooled trait distribution. The difference between the two predictions is the gap that would remain if both groups had the same personality composition and kept their own trait coefficients. Two further gaps add the pay decile and then the reported conditions, with common slopes.
+
+All estimates use the final survey weight, the ten plausible values, and the country's replicate weights, combined with Rubin's rules [@rubin1987]. The group means are rebuilt under every replicate weight, so their sampling error enters the standard errors. Countries are not pooled. Each figure shows the country estimates with their mean and median. The interval for the median is obtained from simulated redraws of the country estimates. Because the same test runs in up to `r nC` countries and for several traits, significant estimates are also counted after the Benjamini–Hochberg adjustment [@benjamini1995]. The conclusions are based on these adjusted counts (Tables A3 and A4). I wrote the estimation code in R [@rcore2025] and checked it against the *mediation* [@tingley2014] and *survey* [@lumley2004] packages. Claude Code, a large language model tool, was used to help optimize the R code. I reviewed and verified all code and estimates.
+
+# Results {#sec-results}
+
+## The subjective reward to non-cognitive skills {#sec-h1}
+
+@fig-h1 shows the premium by country. At the same pay decile, education, and background, one standard deviation of emotional stability is associated with `r f2(kmean("EMOS"))` points more satisfaction on the 1–5 scale (median `r f2(kmed("EMOS"))`, range `r rng(Ks$estimate[Ks$var == "EMOS"], 2)`). The coefficient is positive in every country and significant at the 5% level in `r kp5("EMOS")` of `r nC`, of which `r kq("EMOS")` remain significant after adjustment for multiple testing. Extraversion is associated with `r f2(kmean("EXTR"))` points (significant in `r adj(kp5("EXTR"), kq("EXTR"), " countries", paren = FALSE)`) and agreeableness with `r f2(kmean("AGRE"))` (`r adj(kp5("AGRE"), kq("AGRE"), " countries", paren = FALSE)`). Conscientiousness is associated with `r f2(kmean("CONS"))` points, a small value with a narrow interval (`r sm_ci(Ks[Ks$var == "CONS", ], 3)[["mean"]]`). Open-mindedness is nil (`r f2(kmean("OPEM"))`). This ordering matches the OECD's adjusted results on the same survey [@oecd2025] and differs from the bivariate correlations of @judge2002, where conscientiousness ranks second. Emotional stability is associated mainly with a lower probability of being neutral or dissatisfied, by `r rgK("not_satisfied", "EMOS")` percentage points (significant in `r kc("not_satisfied", "EMOS", -1)` countries). Extraversion is associated instead with a higher probability of being extremely satisfied (`r kc("very_satisfied", "EXTR", 1)` countries).
+
+When I also hold occupation fixed, the premiums change by `r pct1(occ_absorb("EMOS"))`% for emotional stability, `r pct1(occ_absorb("EXTR"))`% for extraversion, and `r pct1(occ_absorb("AGRE"))`% for agreeableness. Without the pay control, they change by `r pc(pay_absorb("EMOS"))`%, `r pc(pay_absorb("EXTR"))`%, and `r pc(pay_absorb("AGRE"))`%. In the `r n_lw` countries that release continuous earnings, the mean emotional-stability coefficient with log hourly earnings is `r f2(kmean("EMOS", KLW))`. With deciles on the same sample, it is `r f2(kmean("EMOS", KDW))`. The satisfaction difference between the top and the bottom earnings decile in the same model is `r f2(mean(PC$top_vs_bottom))` points on average across the `r nrow(PC)` countries with pay data. The emotional-stability coefficient per standard deviation is therefore about `r pc(mean(PC$emos) / mean(PC$top_vs_bottom))`% of the within-country pay gradient in satisfaction. The comparison uses two coefficients from the same model and sample and gives no monetary value. Table A10 reports all estimands. H1 is supported for emotional stability, extraversion, and agreeableness.
+
+```{r}
+#| label: fig-h1
+#| fig-cap: "The subjective reward to non-cognitive skills. Coefficient of each trait on the 1–5 satisfaction score per standard deviation of the trait, by country, at the same pay decile, education, background and numeracy; 95% intervals. Filled: p < 0.05; grey: p < 0.10; hollow: neither. Bottom rows: mean and median across countries with 95% intervals. † no pay control available."
+#| fig-height: 7.2
+#| fig-width: 12
+u <- Ks[, c("country", "var", "estimate", "se", "lower", "upper", "p")]; u$panel <- tl[u$var]
+fig_country_dots(u, tl, cname, flag, "Satisfaction points per SD of the trait (1-5 scale), 95% interval")
+```
+
+## Exposure: little of the premium moves with the job {#sec-exposure}
+
+@fig-indirect splits each country's premium into the indirect effect through the core conditions and the direct effect at the same reported conditions. @fig-conditions shows the mean indirect effect through each condition, and Table A11 gives the full results. For emotional stability, the direct effect is `r f2(direct_mean("EMOS"))` points on average, compared with a total effect of `r f2(kmean("EMOS"))`. The joint indirect effect is significant at the 5% level in `r npos("all", "EMOS")` of `r nC` countries (`r nposq("all", "EMOS")` after adjustment). In the `r ntotsig("EMOS")` countries where the premium is significant, the joint indirect effect accounts for `r shr("all", "EMOS")` of the premium. Time pressure is the only condition with a regular indirect effect (`r apos("time_pressure", "EMOS", " countries", paren = FALSE)`; mean `r f3(amean("time_pressure", "EMOS"))` points). Emotionally stable workers report less pressure, and workers who report more pressure are less satisfied. Pay mediates the premium in `r apos("pay", "EMOS", paste0(" of ", nmed("pay", "EMOS"), " countries"))`. H2a receives weak support.
+
+Extraversion has the only real exposure pathway. Voice has a positive indirect effect in all `r npos("voice", "EXTR")` countries that measure it`r if (nposq("voice", "EXTR") < npos("voice", "EXTR")) paste0(" (", nposq("voice", "EXTR"), " after adjustment)")`. The indirect effect through autonomy is positive in `r apos("autonomy", "EXTR", paste0(" of ", nC))` countries. The indirect effect through learning is positive in `r apos("learning", "EXTR")` countries. Time pressure and skill underuse have negative indirect effects in `r aneg("time_pressure", "EXTR")` and `r aneg("underuse", "EXTR")` countries. Extraverts report more resources but also more demands. The joint indirect effect is significantly positive in `r apos("all", "EXTR", " countries")`, so H2b holds for the individual resources but not for the net. Agreeableness has almost no indirect effects.
+
+The error correlation at which an indirect effect would vanish has a median across countries of `r rho_med("time_pressure")` (time pressure), `r rho_med("autonomy")` (autonomy), and `r rho_med("voice")` (voice). An unobserved factor with only a weak correlation with both the condition and satisfaction could therefore account for the mediated part. A reporting disposition is one such factor.
+
+```{r}
+#| label: fig-indirect
+#| fig-cap: "Direct and indirect parts of the personality premium. Dot: pay-adjusted premium with its 95% interval (as in Fig. 2). Bar from zero: the joint indirect effect through the core job conditions; pale where not significant at the 5% level, pink where its sign is opposite to the premium. Grey bar: the direct effect at the same reported conditions. Bottom rows: mean and median across countries with 95% intervals. † no pay control available."
+#| fig-height: 7.6
+#| fig-width: 12
+tot_f <- MED[MED$kind == "total", c("country", "var", "estimate", "se", "lower", "upper", "p")]
+ind <- MED[MED$kind == "acme_joint_core", c("country", "var", "estimate", "p")]; names(ind)[3:4] <- c("I", "p_ind")
+D <- merge(tot_f, ind, by = c("country", "var")); D$panel <- tl[D$var]
+fig_direct_indirect(D, tl, cname, flag, "Satisfaction points per SD of the trait. Dot: pay-adjusted premium, 95% interval. Bar from zero: indirect part through the core job conditions (pale: p >= 0.05). Grey: direct part.",
+  indirect_label = "Indirect part (moves with the core job conditions)")
+```
+
+```{r}
+#| label: fig-conditions
+#| fig-cap: "Which conditions carry the indirect part? Mean across countries of the indirect part of each trait's premium through pay and through each reported job condition, with its 95% interval, and (diamond) through all core conditions jointly. Right of each panel: the number of countries in which the indirect part is significant at the 5% level, positive (+) or negative (−), over the number of countries estimated. Pay: 20 countries; support and voice: 17."
+#| fig-height: 4.6
+#| fig-width: 10
+clm <- c(cl, all = "All core conditions jointly")
+meds_f <- c("pay", "time_pressure", "repetitive", "physical", "change", "underuse", "autonomy", "learning", "social", "support", "voice", "all")
+W <- do.call(rbind, lapply(traits, function(v) do.call(rbind, lapply(meds_f, function(m) { x <- acm(m, v); r <- summ(x)[1, ]
+  data.frame(panel = tl[[v]], item = clm[[m]], estimate = r$estimate, lower = r$lower, upper = r$upper,
+    lab = count_label(sum(x$p < .05 & x$estimate > 0), sum(x$p < .05 & x$estimate < 0), nrow(x)), highlight = m == "all") }))))
+W$panel <- factor(W$panel, levels = tl); W$item <- factor(W$item, levels = rev(clm[meds_f]))
+fig_means(W, "Mean indirect part across countries (satisfaction points per SD of the trait), 95% interval") + facet_wrap(~ panel, nrow = 1)
+```
+
+## Appraisal: the association is in the deviations {#sec-appraisal}
+
+@fig-appraisal splits the indirect effect through each condition into the part that moves with the occupational group's mean and the part that moves with the worker's deviation from it. Nearly all of each indirect effect is linked to the deviation. For emotional stability, the indirect part through time pressure is significant via the deviation in `r apos("time_pressure_perceived", "EMOS", paste0(" of ", nmed("time_pressure_perceived", "EMOS"), " countries"))` and via the group mean in `r npos("time_pressure_actual", "EMOS") + nneg("time_pressure_actual", "EMOS")`. For extraversion, the indirect part through voice is significant via the deviation in `r apos("voice_perceived", "EXTR", paste0(" of ", nmed("voice_perceived", "EXTR"), " countries"))` and via the group mean in `r npos("voice_actual", "EXTR")`. Extraverts also work in groups that report somewhat more voice and autonomy, so a smaller part of their pathway goes through the group mean.
+
+```{r}
+#| label: fig-appraisal
+#| fig-cap: "Group mean or individual deviation? The indirect part of a trait's premium through a reported condition (dot, 95% interval) is split into the part that moves with the occupational group's mean report (orange; groups are country × occupation × industry) and the part that moves with the worker's deviation from that mean (blue). Pale bars: not significant at the 5% level. Austria and Germany excluded. Bottom rows: mean and median across countries. † no pay control available."
+#| fig-height: 7.2
+#| fig-width: 12
+panels <- data.frame(var = c("EMOS", "EXTR", "EXTR", "EXTR"), m = c("time_pressure", "voice", "autonomy", "learning"))
+panels$lab <- sprintf("%s x\n%s", tl[panels$var], tolower(cl[panels$m]))
+H <- do.call(rbind, lapply(seq_len(nrow(panels)), function(i) { v <- panels$var[i]; m <- panels$m[i]
+  w <- acm(m, v); a <- acm(paste0(m, "_actual"), v); d <- acm(paste0(m, "_perceived"), v)
+  w <- w[w$country %in% a$country, c("country", "estimate", "se", "lower", "upper", "p")]; j <- match(w$country, a$country)
+  w$dev <- d$estimate[j]; w$p_dev <- d$p[j]; w$act <- a$estimate[j]; w$p_act <- a$p[j]; w$panel <- panels$lab[i]; w }))
+fig_split(H, panels$lab, cname, "Indirect part through the condition (satisfaction points per SD of the trait), 95% interval. Pale: part not significant at the 5% level.", flag = flag)
+```
+
+@fig-perceived shows the trait coefficients on both parts of each condition. Emotionally stable workers report less time pressure than others in the same occupation and industry in `r pneg("time_pressure")` of `r n_a1` countries (sign test p `r fmtp(signp(pneg("time_pressure"), n_a1))`; significant in `r adj(sum(perc("time_pressure")$p < .05 & perc("time_pressure")$estimate < 0), sum(perc("time_pressure")$q < .05 & perc("time_pressure")$estimate < 0), paren = FALSE)`). They also report less change, physical strain, learning, and social contact, each in at least `r min(sapply(c('change', 'physical', 'learning', 'social'), pneg))` of `r n_a1` countries. Less stable workers report higher demands. They also report more resources. Sorting into worse jobs would instead increase demands and reduce resources. A uniformly negative way of reporting would do the same. Less stable workers report more of both, which points to experiencing the same work as more intense. The coefficients on the group means are close to zero. For time pressure, the coefficient of emotional stability on the group mean is within ±`r eq_margin_cell` SD, with its 90% interval, in `r equiv(actsel("time_pressure"), eq_margin_cell)` of `r n_a1` countries (nominally significant in `r sum(actsel("time_pressure")$p < .05)`). Its minimum detectable effect is `r f3(2.8 * median(actsel("time_pressure")$se))` SD, against a typical deviation coefficient of `r f3(abs(median(perc("time_pressure")$estimate)))` SD. Extraverts report more voice, autonomy, learning, and social tasks than others in their group. Their groups also report somewhat more of these resources. The results are unchanged with minimum group sizes of 20 and 30 and with 1-digit occupations in every country (Table A6). H3a is supported. The design cannot exclude within-group differences in actual conditions that the occupation codes miss and that go in the same direction.
+
+```{r}
+#| label: fig-perceived
+#| fig-cap: "Traits and the two parts of each reported job condition. Mean coefficient across countries of emotional stability and extraversion on the worker's deviation from the occupational-group mean and on the group mean itself (SD of the condition per SD of the trait), with 95% intervals; grey dots: countries. Right of each panel: countries with a significant positive (+) or negative (−) coefficient at the 5% level. Pay decile and background controls held fixed. Austria and Germany excluded. Full results in Online Resource 1, Table A12."
+#| fig-height: 4.4
+#| fig-width: 11
+row_m <- function(x, panel, item) { r <- summ(x)[1, ]
+  data.frame(panel = panel, item = item, estimate = r$estimate, lower = r$lower, upper = r$upper,
+    lab = count_label(sum(x$p < .05 & x$estimate > 0), sum(x$p < .05 & x$estimate < 0), nrow(x)), highlight = FALSE) }
+pp <- c("Emotional stability:\ndeviation", "Emotional stability:\ngroup mean", "Extraversion:\ndeviation", "Extraversion:\ngroup mean")
+P <- do.call(rbind, lapply(conds, function(k) rbind(row_m(perc(k), pp[1], cl[[k]]), row_m(actsel(k), pp[2], cl[[k]]),
+  row_m(perc(k, "EXTR"), pp[3], cl[[k]]), row_m(actsel(k, "EXTR"), pp[4], cl[[k]]))))
+P$panel <- factor(P$panel, levels = pp); P$item <- factor(P$item, levels = rev(unname(cl[conds])))
+bgP <- do.call(rbind, lapply(conds, function(k) rbind(data.frame(panel = pp[1], item = cl[[k]], estimate = perc(k)$estimate), data.frame(panel = pp[2], item = cl[[k]], estimate = actsel(k)$estimate),
+  data.frame(panel = pp[3], item = cl[[k]], estimate = perc(k, "EXTR")$estimate), data.frame(panel = pp[4], item = cl[[k]], estimate = actsel(k, "EXTR")$estimate))))
+bgP$panel <- factor(bgP$panel, levels = pp); bgP$item <- factor(bgP$item, levels = levels(P$item))
+fig_means(P, "Mean coefficient across countries (SD of the condition per SD of the trait), 95% interval", band_last = FALSE, bg = bgP, x_pad = 0.55) + facet_wrap(~ panel, nrow = 1)
+```
+
+@fig-facets shows that low depression, the facet that measures sadness and low mood, accounts for the emotional-stability premium. Its coefficient is positive and significant in `r if (fsig("EMOS_DEPR") == n_fac) paste("all", n_fac) else paste(fsig("EMOS_DEPR"), "of the", n_fac)` countries with facet scores`r if (fsigq("EMOS_DEPR") < fsig("EMOS_DEPR")) paste0(" (", fsigq("EMOS_DEPR"), " after adjustment)")` (mean `r f3(fmean("EMOS_DEPR"))` points per SD). A stress-buffering account would single out low anxiety. Its coefficient is significant in `r fsig("EMOS_ANXI")` `r if (fsig("EMOS_ANXI") == 1) "country" else "countries"`. Low volatility is significant in `r fsig("EMOS_VOLA")`. The depression–anxiety difference is `r f3(fdiff("EMOS_DEPR-EMOS_ANXI")[["mean"]])` points on average (95% interval `r f3(fdiff("EMOS_DEPR-EMOS_ANXI")[["lo"]])` to `r f3(fdiff("EMOS_DEPR-EMOS_ANXI")[["hi"]])`) and significant in `r fdiff("EMOS_DEPR-EMOS_ANXI")[["pos"]]` of `r n_fac` countries. Within extraversion, energy, the facet closest to positive affect, is the only facet whose mean across countries is distinguishable from zero. The facets associated with satisfaction are those closest to positive and negative affect, as H3b predicts. The low-depression facet measures a general tendency toward low mood and is not a clinical measure. The result therefore concerns the affective side of emotional stability, which carries most of the association, and the survey does not measure clinical depression. Because it is close to evaluative well-being, the result suggests that the personality component of job satisfaction also relates to how people evaluate other life domains.
+
+```{r}
+#| label: fig-facets
+#| fig-cap: "Which facet carries the trait? Coefficients of the 15 BFI-2 facets, entered together with the pay decile and controls, on the 1–5 satisfaction score, in the 12 countries with facet scores. Black: mean across countries with 95% interval; grey dots: countries. Facets are oriented so that higher means more of the trait. Right: the number of countries in which the facet is significant at the 5% level (+ positive, − negative) over 12. Country-by-country estimates in Online Resource 1, Fig. A3."
+#| fig-height: 6.5
+#| fig-width: 9
+fls <- sub("^[A-Z]+: ", "", fl); fls <- sub("^\\(low\\)", "(Low)", fls); substr(fls, 1, 1) <- toupper(substr(fls, 1, 1))
+FAo <- FA[FA$outcome == o & FA$var %in% names(fl), ]
+Fq <- do.call(rbind, lapply(names(fl), function(f) { x <- FAo[FAo$var == f, ]; r <- summ(x)[1, ]
+  data.frame(panel = tl[[sub("_.*", "", f)]], item = fls[[f]], estimate = r$estimate, lower = r$lower, upper = r$upper,
+    lab = count_label(sum(x$p < .05 & x$estimate > 0), sum(x$p < .05 & x$estimate < 0), nrow(x)), highlight = FALSE) }))
+Fq$panel <- factor(Fq$panel, levels = tl); Fq$item <- factor(Fq$item, levels = rev(unname(fls)))
+bg <- data.frame(panel = factor(tl[sub("_.*", "", FAo$var)], levels = tl), item = factor(fls[FAo$var], levels = levels(Fq$item)), estimate = FAo$estimate)
+fig_means(Fq, "Satisfaction points per SD of the facet, 95% interval", band_last = FALSE, bg = bg, x_pad = 0.3, label_at = max(bg$estimate) + 0.01) +
+  facet_grid(panel ~ ., scales = "free_y", space = "free_y", switch = "y") +
+  theme(strip.placement = "outside", strip.text.y.left = element_text(angle = 0, hjust = 1), strip.background = element_blank())
+```
+
+## Reactivity: small interactions between traits and reported conditions {#sec-reactivity}
+
+@fig-reactivity shows the eight pre-specified products and the three placebos. Only `r r_tested_sig` of `r r_tested_n` country estimates `r if (r_tested_sig == 1) "has" else "have"` the predicted sign and `r if (r_tested_sig == 1) "survives" else "survive"` multiple-testing adjustment. Before adjustment, `r r_nom_tested` reach p \< 0.05, about twice the `r round(0.05 * r_tested_n)` that chance would produce. The placebos behave as chance predicts (`r r_nom_placebo` of `r r_placebo_n` at p \< 0.05). Emotional stability × time pressure and openness × learning have the predicted sign in `r rsum("R1")[["sameside"]]` of `r nC` countries (sign test p `r fmtp(signp(rsum("R1")[["sameside"]], nC))` for each), with mean products of `r f3(rsum("R1")[["mean"]])` and `r f3(rsum("R5")[["mean"]])` points per SD × SD. In a single country, I can detect only products of about `r f3(mde_med)` points, as large as a condition's own satisfaction slope. Of the country estimates, `r sum(sapply(tested, function(p) rsum(p)[["equiv"]]))` of `r r_tested_n` are equivalent to zero. The cross-country means are more precise. The largest is `r f3(max(abs(sapply(tested, function(p) rsum(p)[["mean"]]))))` points, against condition slopes of 0.05 to 0.10 points. H4 is not supported in the sense of large moderation. Small moderation in the predicted direction for emotional stability and openness remains compatible with the data. Table A13 gives the full results.
+
+```{r}
+#| label: fig-reactivity
+#| fig-cap: "Reactivity: pre-specified trait × condition products and placebos. Mean across countries of the change in a condition's satisfaction slope per SD of the trait, with 95% interval; grey dots: countries; diamonds: placebos. Shaded band: ±0.025 points, half a condition's own slope. Right: countries with the predicted sign, or with p < 0.05 for placebos. One model per country with all products, traits, conditions, pay decile, and controls. Full results in Online Resource 1, Table A13."
+#| fig-height: 4.2
+#| fig-width: 9
+RR <- do.call(rbind, lapply(pair_def$pair, function(p) { d <- pair_def[pair_def$pair == p, ]; r <- rsum(p)
+  data.frame(panel = "", item = paste0(d$hyp, ": ", tl[[d$trait]], " × ", tolower(cl[[d$condition]])), estimate = r[["mean"]], lower = r[["lo"]], upper = r[["hi"]],
+    lab = if (d$sign == 0) paste0(r[["nominal"]], " of ", r[["n"]], " at p < 0.05") else paste0(r[["sameside"]], " of ", r[["n"]], " with predicted sign"), highlight = d$sign == 0) }))
+RR$item <- factor(RR$item, levels = rev(RR$item))
+bgR <- do.call(rbind, lapply(pair_def$pair, function(p) { u <- RX[RX$var == p & RX$outcome == o, ]; data.frame(item = RR$item[pair_def$pair == p], estimate = u$estimate) }))
+bgR$item <- factor(as.character(bgR$item), levels = levels(RR$item))
+fig_means(RR, "Change in a condition's satisfaction slope per SD of the trait (points per SD x SD), 95% interval", band_last = FALSE, bg = bgR, x_pad = 0.6) +
+  annotate("rect", xmin = -eq_margin_int, xmax = eq_margin_int, ymin = -Inf, ymax = Inf, fill = "#2a9d8f", alpha = 0.12)
+```
+
+## Composition: what the personality mix of worker groups changes {#sec-indicator}
+
+@fig-gap shows the satisfaction gap between the high and low occupational groups in the `r n_ind` countries with occupation codes and at least 100 employees in each group. The raw gap is `r f2(mean(gap("raw")$estimate))` points on average (median `r f2(median(gap("raw")$estimate))`, range `r rng(gap("raw")$estimate, 2)`) and significantly positive in `r sum(gap("raw")$p < .05 & gap("raw")$estimate > 0)` countries. When I standardize both groups to the pooled personality distribution, the gap falls by `r f2(median(abs(gap_change("raw", "standardised"))))` points at the median across countries (largest change `r f2(max(abs(gap_change("raw", "standardised"))))`), to `r f2(mean(gap("standardised")$estimate))` on average. Personality composition therefore accounts for `r pc(median(abs(gap_change("raw", "standardised")) / abs(gap("raw")$estimate)))`% of the gap at the median. When I add the pay decile, the gap becomes `r f2(mean(gap("traits_pay")$estimate))`. When I also add reported conditions, it becomes `r f2(mean(gap("traits_pay_conditions")$estimate))`. At the same pay and conditions, the lower group is as satisfied as the higher one or slightly more. Pay and conditions account for most of the gap. Personality accounts for a smaller part, as H5 predicts.
+
+```{r}
+#| label: fig-gap
+#| fig-cap: "Composition of worker groups. Satisfaction gap (1–5 scale) between managers and professionals (ISCO 1–2) and operative and elementary occupations (ISCO 8–9) within each country, with 95% intervals: raw; with both groups standardized to the pooled personality distribution; after adding the pay decile; and after adding the core reported conditions. Croatia and New Zealand use the top and bottom occupational skill levels; Ireland is excluded (fewer than 100 employees in the bottom level). Filled: p < 0.05; grey: p < 0.10; hollow: neither. † no pay control available."
+#| fig-height: 6.8
+#| fig-width: 12
+gl <- c(raw = "Raw gap", standardised = "Personality-\nstandardized", traits_pay = "+ pay decile", traits_pay_conditions = "+ pay and\nconditions")
+u <- IND[IND$var %in% names(gl), c("country", "var", "estimate", "se", "lower", "upper", "p")]; u$panel <- gl[u$var]
+fig_country_dots(u, unname(gl), cname, flag, "Satisfaction gap between the high and the low occupational group (points on the 1-5 scale), 95% interval") + theme(strip.text = element_text(size = 9.5, lineheight = 0.9))
+```
+
+## Sensitivity and robustness {#sec-robust}
+
+Following @oster2019, I assume that unobservables matter as much as the observed controls (δ = 1, Rmax = 1.3 × R²). Under this assumption, the emotional-stability coefficient remains positive in `r sum(OS$trait == "EMOS" & OS$beta_star > 0)` of `r nC` countries. Its mean is `r f3(mean(OS$beta_star[OS$trait == "EMOS"]))` against an observed `r f3(mean(OS$b_full[OS$trait == "EMOS"]))` (Table A7). @masten2022 show that a coefficient can change sign with far less confounding than it takes to reach zero, so this result describes sensitivity to one specific assumption. When I condition on life satisfaction, I remove a reporting disposition and any effect of a good job on a good life, so the result is not a bound. With this control, the emotional-stability premium is significant in `r adj(sum(LSL$var == "EMOS" & LSL$p < .05 & LSL$estimate > 0), sum(LSL$var == "EMOS" & LSL$q < .05 & LSL$estimate > 0), paste0(" of ", nC, " countries"))`. In the `r n_ten` countries that release tenure, `r if (sum(TEN$p < .05) == 0) "no trait × long-tenure product is significant" else paste0("trait × long-tenure products are significant in ", sum(TEN$p < .05), " of ", nrow(TEN), " cases, as many as chance would produce")`. An immediate or non-monotonic effect of the job on trait reports would not show in this test. Table A14 summarizes what each check can establish.
+
+The decomposition of @gelbach2016 reproduces the joint indirect effects of the mediation analysis (correlation `r f2(cor(med_cmp$mediation, med_cmp$gelbach))` across `r nrow(med_cmp)` country–trait combinations; Figs. A1–A2). Both methods decompose the same regression coefficients, so this comparison checks the code and does not add independent evidence. The baseline premiums are unchanged in logit and ordered-logit models, with literacy instead of numeracy, with the six-item trait scales, with a tenure control, and with the self-employed included (Table A2).
+
+# Discussion {#sec-discussion}
+
+The subjective reward to non-cognitive skills is large compared with the objective one. For one standard deviation of emotional stability, the satisfaction premium is about `r pc(mean(PC$emos) / mean(PC$top_vs_bottom))`% of the within-country pay gradient in satisfaction. Extraversion and agreeableness each have premiums roughly half as large. The trait ordering agrees with @judge2002 for emotional stability and extraversion. Conscientiousness differs. Its bivariate correlation ranks second. With pay and the other traits held fixed, its association is a quarter of emotional stability's. It also agrees with the OECD's finding in the same survey that these associations remain after controlling for wages and job characteristics [@oecd2025]. My results add that occupation changes premiums by less than 5% and job conditions by slightly more. In the same model, pay accounts for `r pc(pay_absorb("EMOS"))`% of the emotional-stability premium, so emotionally stable workers are more satisfied mainly at the same level of pay. Wage returns estimated elsewhere, a few percent of wages per standard deviation [@heckman2006; @almlund2011], are measured in different units and samples and cannot be compared directly. In the framework of @rosen1986, workers with these traits bring to any job a satisfaction premium equivalent to a third of the pay gradient in satisfaction. In these data, little of this premium is reflected in pay. The results below suggest that it does not come from the jobs themselves either. On this interpretation, the subjective rewards to these skills exceed the objective ones. Personality is associated at least as strongly with intrinsic career success as with the extrinsic success measured by wages and employment.
+
+Little of the satisfaction premium is associated with better jobs (H2). With pay held fixed, the seven reported conditions and skill underuse account for a median of `r { u <- acm("all", "EMOS"); u <- u[u$total_p < .05, ]; pc(median(u$share)) }`% of the emotional-stability premium. At the same reported conditions, the association is `r f2(direct_mean("EMOS"))` of `r f2(kmean("EMOS"))`. Extraversion is a partial exception. Extraverts report more autonomy, learning, and voice. This pattern is consistent with sorting into occupations with more influence and contact, as documented in occupational-choice studies [@cobbclarkschurer2012; @oecd2025]. They also report more time pressure and more skill underuse. The corresponding indirect effects cancel out. That literature links traits to the jobs workers hold. In my estimates, sorting accounts for little of their higher satisfaction.
+
+Most of the reward is associated with how workers report their jobs (H3). Traits are associated with workers' deviations from their occupational group means, while the group means themselves are equivalent across traits within a margin of a third of the deviation coefficient. The part of the premium that moves with conditions also moves with the deviations. Less stable workers report more demands and more resources, consistent with a reporting disposition and hard to reconcile with worse jobs. The facet results are consistent with a reporting disposition. Low depression accounts for the premium. Low anxiety has little association with it. The difference between the two is significant in `r fdiff("EMOS_DEPR-EMOS_ANXI")[["pos"]]` of `r n_fac` countries. Organizational psychologists have long disagreed about how to interpret negative affectivity. One account treats it as a nuisance variable that inflates stressor–strain correlations and should be partialed out. Another treats it as a substantive trait that shapes exposure and reaction [@watson1984; @spector2000]. A third interpretation concerns how workers perceive their jobs. The results for the satisfaction premium suggest that negative affectivity shapes these perceptions. This role belongs mainly to the depressive side of the trait. This study extends the diary and single-organization studies in that debate with representative data. Each worker's report is compared with an external reference point, the average report in that worker's occupation and industry.
+
+Traits hardly change the association between conditions and satisfaction (H4). Trait activation theory [@tett2003] and person–environment fit [@kristofbrown2005] predict that a condition should matter more to the worker whose traits it engages. At the cross-country mean, the eight pre-specified products are a tenth of a condition's own slope. Only two products, emotional stability × time pressure and openness × learning, have the predicted sign in `r rsum("R1")[["sameside"]]` of `r nC` countries. Their means are `r f3(rsum("R1")[["mean"]])` and `r f3(rsum("R5")[["mean"]])` points, respectively. Given the power of the tests, I can exclude large moderation, but I cannot rule out small moderation in the predicted direction. In models of job amenities, workers may value conditions differently. Along personality lines, these valuation differences are small, at least for the conditions measured in this survey. The main effects of autonomy, learning, voice, time pressure, and skill underuse are large and similar for workers with different traits.
+
+The reward also matters for comparisons between groups of workers (H5). About a quarter of the satisfaction gap between the high and low occupational groups reflects their composition in these traits. Pay and reported conditions account for the rest. At the same pay and conditions, the lower group is as satisfied as, or more satisfied than, the higher one. Comparisons of satisfaction across groups that differ in personality composition, by occupation, sex, age or health, include this component. Where personality data exist, as in PIAAC, researchers can estimate the size of this component alongside the gap. Satisfaction gaps between groups of workers therefore combine unequal job quality with differences in the traits that shape how workers evaluate and report their work.
+
+All variables are self-reported at one point in time. A causal reading of the decomposition requires sequential ignorability. The appraisal results cast doubt on that assumption. Panel data with repeated measures of personality and conditions would establish temporal order [@maxwell2007]. Linked employer–employee data, with the workplace as the group, would distinguish a worker who sees the same job differently from one who holds a different job within the same codes. Regarding scale equivalence across languages, I rely on the instrument's validation [@soto2017].
+
+# Conclusion {#sec-conclusion}
+
+Across `r nC` countries, emotionally stable, extraverted, and agreeable employees are more satisfied with their jobs than other workers with the same pay and occupation. For emotional stability, the premium is about a third of the satisfaction difference between the bottom and top pay deciles. Reported working conditions account for very little of it. The premium is associated mainly with how workers report their jobs. Within emotional stability, it is concentrated in low depression. Differences in personality composition account for about a quarter of the satisfaction gap between broad occupational groups. Non-cognitive skills are therefore associated with intrinsic and extrinsic career success. Pay accounts for `r pc(pay_absorb("EMOS"))`% of the emotional-stability premium in the same data, so workers with these traits are more satisfied mainly at the same level of pay.
+
+# References {.unnumbered}
+
+::: {#refs}
+:::

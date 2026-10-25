@@ -1,0 +1,82 @@
+---
+title: "Are Non-Cognitive Skills Rewarded with Job Satisfaction Net of Pay? A Cross-Country Analysis of Well-Being at Work in High-Income Economies"
+lang: en-US
+bibliography: references.bib
+csl: apa.csl
+format:
+  docx:
+    reference-doc: reference.docx
+    toc: false
+    number-sections: false
+    fig-dpi: 300
+  pdf:
+    documentclass: article
+    pdf-engine: xelatex
+    mainfont: "Times New Roman"
+    sansfont: "Helvetica Neue"
+    fontsize: 11pt
+    papersize: a4
+    geometry: margin=2.4cm
+    number-sections: false
+    toc: false
+    fig-pos: "H"
+    fig-width: 8
+    fig-height: 5
+    colorlinks: true
+    link-citations: true
+    include-in-header:
+      text: |
+        \usepackage{float}
+        \usepackage{booktabs}
+        \usepackage{longtable}
+        \usepackage{array}
+        \usepackage{multirow}
+        \usepackage{wrapfig}
+        \usepackage{colortbl}
+        \usepackage{pdflscape}
+        \usepackage{tabu}
+        \usepackage{threeparttable}
+        \usepackage{threeparttablex}
+        \usepackage[normalem]{ulem}
+        \usepackage{makecell}
+        \usepackage{xcolor}
+        \usepackage{caption}
+        \captionsetup{font=small}
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    embed-resources: true
+    fig-width: 8
+    fig-height: 5
+crossref:
+  fig-prefix: Fig.
+  fig-title: Fig.
+execute:
+  echo: false
+  warning: false
+  message: false
+
+---
+
+**Garen Avanesian**
+
+Department of Human Resources Management, Southern Federal University, Rostov-on-Don, Russia
+
+**Corresponding author.** Garen Avanesian, Department of Human Resources Management, Southern Federal University, Rostov-on-Don, Russia. E-mail: avanesian@sfedu.ru. ORCID: 0000-0002-0328-637X.
+
+## Declarations {.unnumbered}
+
+**Funding.** This research did not receive any specific grant from funding agencies in the public, commercial, or not-for-profit sectors.
+
+**Competing interests.** The author declares that he has no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+
+**Ethics approval.** The study uses anonymized public-use survey data; no ethics approval was required.
+
+**Consent to participate and for publication.** Not applicable. The study uses anonymized public-use survey data in which respondents gave consent to the survey agencies; no individual can be identified.
+
+**Data availability.** The PIAAC Cycle 2 public-use files are available from the OECD (https://www.oecd.org/skills/piaac/). The analysis code, the dated analysis plan and the run record are held in a GitHub repository and will be made public upon publication.
+
+**Author contributions.** Garen Avanesian: Conceptualization, Data curation, Formal analysis, Methodology, Software, Visualization, Writing – original draft, Writing – review and editing.
+
+**Use of artificial intelligence.** During the preparation of this work, the author, who is not a native English speaker, used Claude Code to copyedit the manuscript and optimize the R code for the reproducible analytical pipeline used to produce this paper. The author reviewed and edited the material and takes responsibility for the final content.

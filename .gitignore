@@ -1,0 +1,23 @@
+# Raw data: OECD archives and unpacked files are kept locally, not in the repository
+01_data/*.zip
+01_data/*.sav
+01_data/prgkorp2_sav/
+
+# Large intermediate file (rebuilt by 01_import.R)
+papers/job_satisfaction/results/raw_selected.rds
+papers/job_satisfaction/results/logs/
+
+# Rendered output (rebuild with `make paper` or `make all`)
+papers/job_satisfaction/output/
+papers/job_satisfaction/manuscript/*_files/
+papers/job_satisfaction/manuscript/*.html
+papers/job_satisfaction/manuscript/*.pdf
+papers/job_satisfaction/manuscript/*.docx
+!papers/job_satisfaction/manuscript/reference.docx
+papers/job_satisfaction/manuscript/.quarto/
+
+# System files
+.DS_Store
+.Rhistory
+.RData
+.Rproj.user/

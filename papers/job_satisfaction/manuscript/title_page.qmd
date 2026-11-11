@@ -1,5 +1,5 @@
 ---
-title: "Are Non-Cognitive Skills Rewarded with Job Satisfaction Net of Pay? A Cross-Country Analysis of Well-Being at Work in High-Income Economies"
+title: "Are Non-Cognitive Skills Rewarded with Job Satisfaction Net of Pay? Evidence from High-Income Countries"
 lang: en-US
 bibliography: references.bib
 csl: apa.csl
@@ -59,24 +59,24 @@ execute:
 
 ---
 
+**Running title:** Non-Cognitive Skills and Job Satisfaction
+
 **Garen Avanesian**
 
 Department of Human Resources Management, Southern Federal University, Rostov-on-Don, Russia
 
 **Corresponding author.** Garen Avanesian, Department of Human Resources Management, Southern Federal University, Rostov-on-Don, Russia. E-mail: avanesian@sfedu.ru. ORCID: 0000-0002-0328-637X.
 
+**Acknowledgments.** The author, who is not a native English speaker, used Claude Code (Anthropic) and Codex (OpenAI), tools based on large language models, to optimize the R code of the reproducible analytical pipeline, to copyedit the manuscript, and to cut the draft to the journal's limit of 7,500 words, which included restructuring and shortening passages and drafting text that the author then revised. The author reviewed and verified all code, estimates, and text, and takes responsibility for the final content.
+
 ## Declarations {.unnumbered}
 
 **Funding.** This research did not receive any specific grant from funding agencies in the public, commercial, or not-for-profit sectors.
 
-**Competing interests.** The author declares that he has no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+**Conflict of interest.** The author declares that he has no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
 
-**Ethics approval.** The study uses anonymized public-use survey data; no ethics approval was required.
+**Ethics approval (IRB statement).** The study is a secondary analysis of anonymized public-use survey data and did not require review by an institutional review board.
 
 **Consent to participate and for publication.** Not applicable. The study uses anonymized public-use survey data in which respondents gave consent to the survey agencies; no individual can be identified.
 
-**Data availability.** The PIAAC Cycle 2 public-use files are available from the OECD (https://www.oecd.org/skills/piaac/). The analysis code, the dated analysis plan and the run record are held in a GitHub repository and will be made public upon publication.
-
-**Author contributions.** Garen Avanesian: Conceptualization, Data curation, Formal analysis, Methodology, Software, Visualization, Writing – original draft, Writing – review and editing.
-
-**Use of artificial intelligence.** During the preparation of this work, the author, who is not a native English speaker, used Claude Code to copyedit the manuscript and optimize the R code for the reproducible analytical pipeline used to produce this paper. The author reviewed and edited the material and takes responsibility for the final content.
+**Data availability.** The study uses the public-use files of the OECD Survey of Adult Skills 2023 (PIAAC Cycle 2), which are freely available from the OECD at https://www.oecd.org/skills/piaac/data/. The analysis code, the cached estimates used in the manuscript, and the dated analysis protocol are available at https://github.com/karavan88/NCSJobSatisfPIAAC. The repository does not redistribute the raw OECD files; it lists the files to download and their checksums.

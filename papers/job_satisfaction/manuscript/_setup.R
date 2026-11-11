@@ -108,26 +108,49 @@ pay_absorb <- function(v) ratio_means(v, Ks, KNs)            # pay-adjusted vs u
 pay_absorb_cc <- function(v) ratio_means(v, KPC, KNC)        # the same, complete pay cases only
 pct1 <- function(x) if (abs(x) < 0.005) "less than 1" else pc(x, 1)
 occ_absorb <- function(v) ratio_means(v, KO, Ks)             # occupation added to the pay-adjusted model
-JO <- S$joint
-# ---- Mediation ----
+# ---- Mediation (mediate): total, direct and indirect effects through the 4 blocks ----
+blk <- c(pay = "Pay", demands = "Job demands", resources = "Job resources", underuse = "Skill underuse")
+med_info <- S$med_info
 tot <- MED[MED$kind == "total", c("country", "var", "estimate", "q", "p")]; names(tot)[3:5] <- c("total", "total_q", "total_p")
-AC <- merge(MED[MED$kind %in% c("acme", "acme_joint", "acme_joint_core"), ], tot, by = c("country", "var")); AC$share <- AC$estimate / AC$total
-# "all" refers to the common core set (seven conditions and skill underuse) in every country;
-# the extended set adds support and voice in the countries that field them.
-acm <- function(m, v, kind = if (m == "all") "acme_joint_core" else if (m == "all_ext") "acme_joint" else "acme") {
-  u <- AC[AC$mediator == "all" & AC$kind == kind & AC$var == v, ]; if (!m %in% c("all", "all_ext")) u <- AC[AC$mediator == m & AC$kind == "acme" & AC$var == v, ]
-  if (m == "all_ext") u <- u[u$country %in% info$country[info$extended], ]
-  u[order(u$country), ] }
+AC <- merge(MED[MED$kind == "acme", ], tot, by = c("country", "var")); AC$share <- AC$estimate / AC$total
+# acm(m, v): ACME through mediator m ("pay", "demands", "resources", "underuse", "all", a split index
+# such as "demands_dev", or a condition index such as "time_pressure_mean"), one row per country.
+acm <- function(m, v) { u <- AC[AC$mediator == m & AC$var == v, ]; u[order(u$country), ] }
+mrow <- function(kind, m, v) { u <- MED[MED$kind == kind & MED$mediator == m & MED$var == v, ]; u[order(u$country), ] }
+TOT <- MED[MED$kind == "total", ]; ADE <- MED[MED$kind == "ade", ]
 npos <- function(m, v) { u <- acm(m, v); sum(u$p < .05 & u$estimate > 0) }; nposq <- function(m, v) { u <- acm(m, v); sum(u$q < .05 & u$estimate > 0) }
 nneg <- function(m, v) { u <- acm(m, v); sum(u$p < .05 & u$estimate < 0) }; nnegq <- function(m, v) { u <- acm(m, v); sum(u$q < .05 & u$estimate < 0) }
-apos <- function(m, v, after = "", paren = TRUE) adj(npos(m, v), nposq(m, v), after, paren); aneg <- function(m, v, after = "", paren = TRUE) adj(nneg(m, v), nnegq(m, v), after, paren)
 nmed <- function(m, v) nrow(acm(m, v))
 amean <- function(m, v) mean(acm(m, v)$estimate)
-shr <- function(m, v) { u <- acm(m, v); u <- u[u$total_p < .05, ]; if (!nrow(u)) return("—"); paste0(pc(min(u$share)), "% to ", pc(max(u$share)), "% (median ", pc(median(u$share)), "%)") }
-ntotsig <- function(v) sum(tot$var == v & tot$total_p < .05)
-direct_mean <- function(v, kind = "ade_joint_core") mean(MED$estimate[MED$kind == kind & MED$var == v])
-RHO <- MED[MED$kind == "rho", ]
-rho_med <- function(m) f2(median(abs(RHO$estimate[RHO$mediator == m])))
+tmean <- function(v) mean(TOT$estimate[TOT$var == v]); dmean <- function(v) mean(ADE$estimate[ADE$var == v])
+tsig <- function(v) sum(TOT$var == v & TOT$p < .05 & TOT$estimate > 0)
+# share of the mean total effect: mean ACME (or ADE) over mean total
+mshare <- function(m, v) if (m == "direct") dmean(v) / tmean(v) else amean(m, v) / tmean(v)
+# Net of pay: total effect minus the ACME through pay (no pay block where no decile is released).
+netpay_cc <- function(v) { t <- TOT[TOT$var == v, c("country", "estimate")]; a <- acm("pay", v)
+  t$pay <- a$estimate[match(t$country, a$country)]; t$pay[is.na(t$pay)] <- 0; t$net <- t$estimate - t$pay; t }
+netpay <- function(v) mean(netpay_cc(v)$net)
+payshare <- function(v) amean("pay", v) / mean(TOT$estimate[TOT$var == v & TOT$country %in% acm("pay", v)$country])
+# Sum of the 4 block ACMEs (= ACME through all blocks) as a share of the total, mean of countries.
+medshare <- function(v) amean("all", v) / tmean(v)
+# Countries with a significant positive (s = 1) or negative (s = -1) ACME through m.
+nsig <- function(m, v, s = 1) if (s > 0) npos(m, v) else nneg(m, v)
+RHO <- S$med_rho; GRID <- S$med_grid
+rho_k <- function(k) mean(RHO$rho_star[RHO$k == k])
+# Mediation table in mediate's layout: rows (ACME by mediator, ADE, total effect, proportion
+# mediated), traits in columns; cells: mean of the country estimates with stars from its
+# interval (sqrt(sum se^2) / K), and the 95% interval below.
+med_cell <- function(u) { r <- summ(u)[1, ]; z <- r$estimate / r$se
+  st <- ifelse(abs(z) > qnorm(.995), "***", ifelse(abs(z) > qnorm(.975), "**", ifelse(abs(z) > qnorm(.95), "*", "")))
+  sprintf("%s%s\n[%s, %s]", f3(r$estimate), st, f3(r$lower), f3(r$upper)) }
+med_table <- function(meds, labels) {
+  tv <- c("EMOS", "EXTR", "AGRE", "CONS", "OPEM")
+  rows <- lapply(seq_along(meds), function(i) c(labels[i], sapply(tv, function(v) med_cell(acm(meds[i], v)))))
+  rows <- c(rows, list(c("ADE: direct effect", sapply(tv, function(v) med_cell(mrow("ade", "all", v)))),
+    c("Total effect", sapply(tv, function(v) med_cell(mrow("total", "all", v)))),
+    c("Proportion mediated (%)", sapply(tv, function(v) pc(sum(sapply(meds, amean, v = v)) / tmean(v))))))
+  tab <- as.data.frame(do.call(rbind, rows), stringsAsFactors = FALSE); names(tab) <- c("Effect", tl[tv]); tab
+}
 # ---- Appraisal: occupational-group means and individual deviations ----
 perc <- function(k, v = "EMOS", model = "A1") CH[CH$model == model & CH$kind == "perceived" & CH$outcome == k & CH$var == v, ]
 actsel <- function(k, v = "EMOS", model = "A1") CH[CH$model == model & CH$kind == "actualsel" & CH$outcome == k & CH$var == v, ]
@@ -169,24 +192,16 @@ condslope <- CH[CH$kind %in% c("cond", "main") & CH$outcome == o & ((CH$model ==
 cs <- function(v, s) sum(condslope$var == v & condslope$p < .05 & sign(condslope$estimate) == s)
 # ---- Robustness ----
 gch <- function(model, kind, var) { u <- CH[CH$model == model & CH$kind == kind & CH$var == var & CH$outcome == o, ]; u[order(u$country), ] }
-share_of <- function(v) { b <- gch("E1", "base", v); c <- gch("E1", "change", v); m <- merge(b, c, by = "country"); setNames(m$estimate.y / m$estimate.x, m$country) }
-sh_es <- share_of("EMOS")
-# Gelbach check on the same mediator set (core conditions and skill underuse) and the joint ACME.
-med_cmp <- do.call(rbind, lapply(c("EMOS", "EXTR", "AGRE"), function(v) do.call(rbind, lapply(unique(MED$country), function(k) {
-  a <- AC[AC$kind == "acme_joint_core" & AC$country == k & AC$var == v, ]
-  g <- CH[CH$model == "E1" & CH$country == k & CH$var == v & CH$outcome == o & CH$kind %in% c("change", "via_structural"), ]
-  data.frame(country = k, trait = tl[[v]], mediation = a$estimate, gelbach = g$estimate[g$kind == "change"] - g$estimate[g$kind == "via_structural"]) }))))
 OS <- S$oster[S$oster$outcome == o, ]
 APS <- CH[CH$model == "V2_aps" & CH$var == "skill" & CH$outcome == o, ]
 TEN <- CH[CH$model == "V3_tenure" & grepl(":long_tenure", CH$var) & CH$outcome == o, ]
 LSJ <- CH[CH$model == "A3_jobs" & CH$var %in% traits & CH$outcome == o, ]; LSL <- CH[CH$model == "A3_lifesat" & CH$var %in% traits & CH$outcome == o, ]
-PC <- readRDS(file.path(root, "papers/job_satisfaction/results/pay_contrast.rds"))
+PC <- S$pay_contrast
 Dn <- S$distribution[S$distribution$category >= 3 & S$distribution$country %in% info$country, ]; ns_share <- tapply(Dn$share, Dn$country, sum)
 CD <- S$cell_diag
 
 # ---- objects shared by the main text and the appendix ----
-ml <- c(all = "All core conditions jointly", all_ext = "All conditions incl. support and voice (17 countries)", pay = "Pay (earnings decile)", time_pressure = "Time pressure", repetitive = "Repetitive tasks", physical = "Physical work",
-  change = "Change in work environment", autonomy = "Autonomy", learning = "Learning at work", social = "Social tasks", support = "Support", voice = "Voice", underuse = "Skill underuse")
+ml <- c(all = "All blocks jointly", pay = "Pay", demands = "Job demands", resources = "Job resources", underuse = "Skill underuse")
 clm <- c(cl, all = "All core conditions jointly")
 conds <- c("time_pressure", "repetitive", "physical", "change", "autonomy", "learning", "social", "support", "voice")
 fls <- sub("^[A-Z]+: ", "", fl); fls <- sub("^\\(low\\)", "(Low)", fls); substr(fls, 1, 1) <- toupper(substr(fls, 1, 1))

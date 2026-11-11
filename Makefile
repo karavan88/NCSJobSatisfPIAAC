@@ -1,27 +1,41 @@
-# Reproducible workflow for "Are Non-Cognitive Skills Rewarded with Job Satisfaction Net of Pay?"
-# Run from the repository root.
+# Reproduces "Are Non-Cognitive Skills Rewarded with Job Satisfaction Net of Pay?" from the
+# PIAAC Cycle 2 public-use files (see README.md). Run from the repository root.
 #
-#   make data      unpack the OECD PIAAC public-use archives in 01_data/
-#   make all       full pipeline: import, estimation, collection, Word submission files
-#   make paper     render the manuscript from the cached estimates in papers/job_satisfaction/results/
-#   make check     confirm R, Quarto and the R packages are available
+#   make data         unpack the OECD archives placed in 01_data/
+#   make import       read the 23 country files (results/raw_selected.rds, coverage.csv)
+#   make estimates    weighted least squares estimates by country (results/estimates/)
+#   make mediation    mediation::mediate() estimates by country (results/mediation/)
+#   make collect      one results file for the manuscript (results/summary.rds)
+#   make render       manuscript (docx), appendix (docx and pdf) and title page
+#   make all          everything above, in order
+#   make check        confirm that R, Quarto and the R packages are available
 
 CORES ?= 6
-MS := papers/job_satisfaction/manuscript
+P := papers/job_satisfaction
+RUN := PIAAC_CORES=$(CORES) OMP_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 OPENBLAS_NUM_THREADS=1 Rscript
 
-.PHONY: data all paper check
+.PHONY: all data import estimates mediation collect render check
+all: import estimates mediation collect render
 
 data:
-	Rscript papers/job_satisfaction/R/00_unpack_data.R
+	Rscript $(P)/R/00_unpack_data.R
 
-all:
-	CORES=$(CORES) sh papers/job_satisfaction/R/run_all.sh
+import:
+	Rscript $(P)/R/01_import.R
 
-paper:
-	quarto render $(MS)/job_satisfaction.qmd
-	quarto render $(MS)/appendix.qmd
+estimates:
+	$(RUN) $(P)/R/02_estimate.R
+
+mediation:
+	$(RUN) $(P)/R/03_mediation.R
+
+collect:
+	Rscript $(P)/R/04_collect.R
+
+render:
+	LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 sh $(P)/R/make_submission.sh
 
 check:
 	R --version | head -1
 	quarto --version
-	Rscript -e 'p <- c("haven","survey","mediation","ggplot2","patchwork","knitr","kableExtra","flextable","officer","here","MASS","tidyselect"); m <- p[!vapply(p, requireNamespace, logical(1), quietly = TRUE)]; if (length(m)) stop("missing: ", paste(m, collapse = ", ")) else cat("all packages available\n")'
+	Rscript -e 'p <- c("haven", "tidyselect", "mediation", "ggplot2", "patchwork", "knitr", "kableExtra", "flextable", "officer", "here"); for (x in p) cat(sprintf("%-11s %s\n", x, tryCatch(as.character(packageVersion(x)), error = function(e) "MISSING")))'

@@ -10,7 +10,11 @@
 # quasi-Bayesian intervals of mediation::mediate() (03_mediation.R).
 
 traits <- c("EXTR", "CONS", "OPEM", "EMOS", "AGRE")
-outcomes <- c("very_satisfied", "not_satisfied", "satisfaction_score")
+# top_plus_bottom = very_satisfied + not_satisfied: its coefficient on a trait is the effect on
+# the probability of being extremely satisfied plus the effect on the probability of being not
+# satisfied, so it is positive when a trait works mainly at the top of the scale and negative
+# when it works mainly at the bottom (exact test of the asymmetry, same model and sample).
+outcomes <- c("very_satisfied", "not_satisfied", "satisfaction_score", "top_plus_bottom")
 wage_countries <- c("CHL", "CZE", "ESP", "EST", "FRA", "HRV", "IRL", "ITA", "LTU", "LVA", "NZL", "POL")
 # Countries of the study: Cycle 2 countries that release the Big Five and the
 # satisfaction item for employees. Denmark, Japan, Singapore and the United States
@@ -86,6 +90,7 @@ prepare <- function(d, cc, employees_only = TRUE) {
   d$very_satisfied <- as.numeric(d$D2_Q13 == 1)
   d$not_satisfied <- as.numeric(d$D2_Q13 %in% 3:5)
   d$satisfaction_score <- 6 - d$D2_Q13
+  d$top_plus_bottom <- d$very_satisfied + d$not_satisfied
   d$self_employed <- as.numeric(d$D2_Q04 == 2)
   d$age <- fac(d$AGEG10LFS, 2:5); d$gender <- fac(d$GENDER_R, 1:2)
   d$education <- fac(d$EDCAT6_TC1, 1:6)
@@ -114,6 +119,9 @@ prepare <- function(d, cc, employees_only = TRUE) {
   d$skills_match <- relevel_first(factor(ifelse(d$H2_Q19a %in% 1:3,
     c("higher", "matched", "lower")[pmax(1, pmin(3, d$H2_Q19a))], "Unknown")), "matched")
   d$life_sat <- ifelse(d$I2_Q05 %in% 0:10, d$I2_Q05, NA)
+  # Household and health controls of the satisfaction literature (robustness only): self-rated
+  # health (1 excellent ... 5 poor), living with a partner, having children.
+  d$health <- bg(d$I2_Q03, 1:5); d$partner <- bg(d$J2_Q02a, 1:2); d$children <- bg(d$J2_Q03a, 1:2)
   d$log_wage <- NA_real_
   if (any(is.finite(d$EARNHRBONUSC2) & d$EARNHRBONUSC2 > 0 & d$D2_Q04 %in% 1)) {
     pos <- d$D2_Q04 %in% 1 & is.finite(d$EARNHRBONUSC2) & d$EARNHRBONUSC2 > 0
@@ -144,6 +152,9 @@ has_tenure <- function(d) mean(d$tenure != "Unknown") > 0.9
 base_f <- ~ EXTR + CONS + OPEM + EMOS + AGRE + age + gender + education + born + mother + father + numeracy + wage_decile
 base_f_nopay <- ~ EXTR + CONS + OPEM + EMOS + AGRE + age + gender + education + born + mother + father + numeracy
 structural_f <- ~ occupation + contract + hours + firm_size + sector + manages
+# Job characteristics block of the mediation model: the structural terms and tenure.
+job_f <- ~ occupation + contract + hours + firm_size + sector + manages + tenure
+household_f <- ~ health + partner + children
 cond_f <- function(set) reformulate(c(set, paste0(set, "_miss")))
 
 # Design matrix without intercept; terms whose factors have fewer than two observed

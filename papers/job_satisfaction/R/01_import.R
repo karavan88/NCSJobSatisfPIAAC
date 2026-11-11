@@ -15,7 +15,7 @@ facets <- c("EXTR_SOCI", "EXTR_ASSE", "EXTR_ENER", "AGRE_COMP", "AGRE_RESP", "AG
 job_items <- c("H2_Q12", "H2_Q17", "H2_Q07a", paste0("H2_Q18a0", 1:7), paste0("H2_Q08", letters[1:4]), paste0("H2_Q09", letters[1:3]),
   paste0("H2_Q03", letters[1:4]), paste0("H2_Q05", letters[1:2]), paste0("H2_Q13", letters[1:3]), paste0("H2_Q14", letters[1:2]))
 vars <- c("SEQID", "C2_D05", "D2_Q04", "AGEG10LFS", "AGE_R", "GENDER_R", "EDCAT6_TC1",
-  "EDA_ISCED1", "EDA_ISCED1_C", "A2_Q03a", "J2_Q04c", "J2_Q05c",
+  "EDA_ISCED1", "EDA_ISCED1_C", "A2_Q03a", "J2_Q04c", "J2_Q05c", "J2_Q02a", "J2_Q03a",
   "D2_Q13", "I2_Q05", "I2_Q03", "H2_Q19a", traits, traits6, facets, job_items, "ISIC1C",
   "ISCO1C", "ISCO2C", "ISCO08_C", "ISCOSKIL4", "D2_Q03", "D2_Q05a2", "D2_Q07a", "D2_Q09a",
   "D2_Q10_C", "D2_Q11_C", "TASKDISCC2_T1", "LEARNATWORKC2", "EARNHRBONUSC2", "EARNHRBONUSDCLC2",

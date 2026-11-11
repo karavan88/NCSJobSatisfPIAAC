@@ -48,7 +48,8 @@ logit_rows <- function(d) {
 gap_rows <- function(d, hi, lo) {
   g <- ifelse(hi, 1, ifelse(lo, 0, NA)); k <- !is.na(g); d <- d[k, ]; g <- g[k]; w <- d$SPFWT0
   Tc <- sapply(traits, function(v) d[[v]] - wm(d[[v]], w))
-  y <- d$satisfaction_score; one <- rep(1, nrow(d))
+  one <- rep(1, nrow(d))
+  do.call(rbind, lapply(outcomes, function(o) { y <- d[[o]]
   co <- function(X, term) { f <- wlm(X, y, w); est_rows(f$b[term, 1], f$se[term, 1], term) }
   r <- rbind(
     co(cbind(`(Intercept)` = one, raw = g), "raw"),
@@ -57,7 +58,7 @@ gap_rows <- function(d, hi, lo) {
     co(cbind(`(Intercept)` = one, traits_pay = g, Tc, mk(~ wage_decile, d)), "traits_pay"),
     co(cbind(`(Intercept)` = one, traits_pay_conditions = g, Tc, mk(~ wage_decile, d), mk(cond_f(conditions_core), d), mismatch(d)),
        "traits_pay_conditions"))
-  r$term <- paste0("gap|all|", r$term)
+  r$term <- paste0("gap|", o, "|", r$term); r })) -> r
   rbind(r, data.frame(term = "gap|all|share_high", estimate = wm(g, w), se = NA, p = NA, lower = NA, upper = NA))
 }
 
@@ -112,6 +113,9 @@ run_country <- function(cc) {
     add(spec(s6), "sens_six_item")
   }
   if (has_tenure(s)) add(spec(s, update(base_f, ~ . + tenure)), "sens_tenure")
+  # Job characteristics and the household and health controls of the satisfaction literature.
+  add(spec(s, update(base_f, ~ . + occupation + contract + hours + firm_size + sector + manages + tenure)), "sens_job")
+  add(spec(s, update(base_f, ~ . + occupation + contract + hours + firm_size + sector + manages + tenure + health + partner + children)), "sens_clark")
   a <- prepare(raw[[cc]], cc, employees_only = FALSE); a <- a[a$core_ok, ]
   add(spec(a, update(base_f, ~ . + self_employed + occupation + taskdisc + taskdisc_miss + learn_index + learn_index_miss)), "sens_selfemployed")
   add(logit_rows(s), "nonlinear")
@@ -134,7 +138,7 @@ run_country <- function(cc) {
   tc <- sapply(traits, function(v) s[[v]] - wm(s[[v]], w))
   X <- cbind(X_base(s), mk(structural_f, s), mk(cond_f(setdiff(conds_all, "underuse")), s), mismatch(s))
   add(do.call(rbind, lapply(traits, function(v) do.call(rbind, lapply(conds_all, function(k) {
-    nm <- paste0(v, ":", k); f <- wlm(cbind(X, setNames(data.frame(tc[, v] * s[[k]]), nm) |> as.matrix()), ymat(s, "satisfaction_score"), w)
+    nm <- paste0(v, ":", k); f <- wlm(cbind(X, setNames(data.frame(tc[, v] * s[[k]]), nm) |> as.matrix()), ymat(s), w)
     fit_rows(f, nm, "prod") })))), "PROD")
 
   # ---- H3a: group mean and deviation; group definitions ----
@@ -197,8 +201,9 @@ run_country <- function(cc) {
   # ---- scale benchmark: top vs bottom pay decile ----
   pay_contrast <- NULL
   if (has_wage_deciles(s)) {
-    sp <- s; sp$wage_decile <- relevel(factor(sp$wage_decile), "1"); f <- wlm(X_base(sp), sp$satisfaction_score, sp$SPFWT0)
-    pay_contrast <- data.frame(country = cc, top_vs_bottom = f$b["wage_decile10", 1], emos = f$b["EMOS", 1])
+    sp <- s; sp$wage_decile <- relevel(factor(sp$wage_decile), "1")
+    pay_contrast <- do.call(rbind, lapply(outcomes, function(o) { f <- wlm(X_base(sp), sp[[o]], sp$SPFWT0)
+      data.frame(country = cc, outcome = o, top_vs_bottom = f$b["wage_decile10", 1], emos = f$b["EMOS", 1]) }))
   }
 
   info <- data.frame(country = cc, n = nrow(s), extended = ext, facets = fac, a1 = !cc %in% no_job_cell,

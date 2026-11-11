@@ -162,31 +162,31 @@ count_label <- function(npos, nneg, n) {
 
 # ---- Schematic path diagram for the methods section ----
 draw_schematic <- function() {
-  # Trait -> 4 mediator blocks -> satisfaction, plus the direct path; colours as in Fig. 3.
-  bl <- c("Pay", "Job demands", "Job resources", "Skill underuse"); by <- c(3.3, 2.5, 1.7, 0.9)
-  bc <- c("#e9a23b", "#c44536", "#4a9fe0", "#7b5ea7")
+  # Trait -> 5 mediator blocks -> satisfaction, plus the direct path; colours as in Fig. 3.
+  bl <- c("Pay", "Job characteristics", "Job demands", "Job resources", "Skill underuse"); by <- c(3.5, 2.8, 2.1, 1.4, 0.7)
+  bc <- unname(block_cols[bl])
   ar <- arrow(length = unit(5, "pt"), type = "closed")
   g <- ggplot()
-  for (k in 1:4) g <- g +
-    annotate("segment", x = 0.55, y = 2.1, xend = 1.45, yend = by[k], arrow = ar, colour = "grey45", linewidth = 0.4) +
-    annotate("segment", x = 2.55, y = by[k], xend = 3.4, yend = 2.1, arrow = ar, colour = "grey45", linewidth = 0.4)
-  g + annotate("segment", x = 0, y = 1.75, xend = 0, yend = 0.25, colour = "grey35") +
-    annotate("segment", x = 0, y = 0.25, xend = 4, yend = 0.25, colour = "grey35") +
-    annotate("segment", x = 4, y = 0.25, xend = 4, yend = 1.72, arrow = ar, colour = "grey35") +
-    geom_label(aes(x = 2, y = by, label = bl), size = 3.4, fontface = "bold", fill = bc, colour = "white",
-      label.size = 0, label.padding = unit(0.45, "lines")) +
+  for (k in 1:5) g <- g +
+    annotate("segment", x = 0.55, y = 2.1, xend = 1.3, yend = by[k], arrow = ar, colour = "grey45", linewidth = 0.4) +
+    annotate("segment", x = 2.7, y = by[k], xend = 3.4, yend = 2.1, arrow = ar, colour = "grey45", linewidth = 0.4)
+  g + annotate("segment", x = 0, y = 1.75, xend = 0, yend = 0.1, colour = "grey35") +
+    annotate("segment", x = 0, y = 0.1, xend = 4, yend = 0.1, colour = "grey35") +
+    annotate("segment", x = 4, y = 0.1, xend = 4, yend = 1.72, arrow = ar, colour = "grey35") +
+    geom_label(aes(x = 2, y = by, label = bl), size = 3.3, fontface = "bold", fill = bc, colour = "white",
+      label.size = 0, label.padding = unit(0.4, "lines")) +
     geom_label(aes(x = c(0, 4), y = 2.1, label = c("Trait", "Job\nsatisfaction")), size = 4, fontface = "bold",
       fill = c("#3d3d3d", "#264653"), colour = "white", label.size = 0, label.padding = unit(0.6, "lines")) +
-    annotate("text", x = 2, y = 4, label = "Indirect effects (ACME): trait \u2192 block \u2192 satisfaction", size = 3.2) +
-    annotate("text", x = 2, y = 0.05, label = "Direct effect (ADE): difference at the same values of all 4 blocks", size = 3.2) +
-    annotate("text", x = 2, y = -0.45, label = "Total effect = 4 ACMEs + ADE.  Net of pay = total effect \u2212 ACME through pay.", size = 3, colour = "grey25") +
-    scale_x_continuous(limits = c(-0.8, 4.8)) + scale_y_continuous(limits = c(-0.6, 4.2)) + theme_void()
+    annotate("text", x = 2, y = 4.1, label = "Indirect effects (ACME): trait \u2192 block \u2192 satisfaction", size = 3.2) +
+    annotate("text", x = 2, y = -0.1, label = "Direct effect (ADE): difference at the same values of all 5 blocks", size = 3.2) +
+    annotate("text", x = 2, y = -0.55, label = "Total effect = 5 ACMEs + ADE.  Net of pay = total effect \u2212 ACME through pay.", size = 3, colour = "grey25") +
+    scale_x_continuous(limits = c(-0.8, 4.8)) + scale_y_continuous(limits = c(-0.7, 4.3)) + theme_void()
 }
 
 # ---- Figure: indirect effects through each mediator block and the direct effect, by country ----
 # Parts stack from zero: positive parts to the right, negative parts to the left; the circle is
 # the total effect with its interval. Bottom row: means of the country estimates.
-block_cols <- c(Pay = "#e9a23b", `Job demands` = "#c44536", `Job resources` = "#4a9fe0", `Skill underuse` = "#7b5ea7", `Direct effect` = "grey72")
+block_cols <- c(Pay = "#e9a23b", `Job characteristics` = "#2a9d8f", `Job demands` = "#c44536", `Job resources` = "#4a9fe0", `Skill underuse` = "#7b5ea7", `Direct effect` = "grey72")
 fig_blocks_by_country <- function(parts, tot, panel_levels, cname, flag = character(), xlab) {
   # parts: country, panel, part (names of block_cols), value; tot: country, panel, estimate, se, lower, upper, p
   cb <- split(tot$country, tot$panel); af <- axis_frame(panel_levels, cb, cname, flag)
@@ -219,7 +219,7 @@ fig_blocks_by_country <- function(parts, tot, panel_levels, cname, flag = charac
 # b: share of the indirect effect that remains at each assumed error correlation (mean of countries).
 fig_sensitivity <- function(rho, grid, cname, block_labels) {
   rho$cn <- factor(cname[rho$country], levels = rev(sort(unique(cname[rho$country]))))
-  rho$lab <- factor(block_labels[rho$k], levels = block_labels)
+  rho$lab <- factor(block_labels[rho$last], levels = block_labels)
   m <- aggregate(rho_star ~ lab, rho, mean)
   a <- ggplot(rho, aes(rho_star, cn)) + geom_vline(xintercept = 0, colour = "grey55") +
     geom_point(shape = 21, fill = "white", colour = ink, size = 1.8) +
@@ -230,24 +230,24 @@ fig_sensitivity <- function(rho, grid, cname, block_labels) {
   # (a ratio of means, so countries with an ACME near zero do not dominate).
   g <- grid[grid$rho > -1e-9 & grid$rho <= 0.4, ]
   g$rho <- round(g$rho, 2)
-  s <- aggregate(acme ~ k + rho, g, mean); s0 <- s[s$rho == 0, c("k", "acme")]; names(s0)[2] <- "acme0"
-  s <- merge(s, s0, by = "k"); s$share <- s$acme / s$acme0
-  s$lab <- factor(block_labels[s$k], levels = block_labels)
+  s <- aggregate(acme ~ last + rho, g, mean); s0 <- s[s$rho == 0, c("last", "acme")]; names(s0)[2] <- "acme0"
+  s <- merge(s, s0, by = "last"); s$share <- s$acme / s$acme0
+  s$lab <- factor(block_labels[s$last], levels = block_labels)
   b <- ggplot(s, aes(rho, 100 * share, colour = lab)) + geom_hline(yintercept = 0, colour = "grey55") + geom_line(linewidth = 0.8) +
-    scale_colour_manual(values = c("#e9a23b", "#c44536", "#4a9fe0", "#7b5ea7")[seq_along(block_labels)], name = NULL) +
+    scale_colour_manual(values = unname(block_cols[1:5])[seq_along(block_labels)], name = NULL) +
     coord_cartesian(ylim = c(-100, 100)) +
     labs(x = "Assumed error correlation ρ", y = "ACME remaining (%)", title = "b") + paper_theme()
   a / b + plot_layout(heights = c(1.4, 1))
 }
 
 # ---- Figure: heatmap of all trait x condition products (mean of countries) ----
-fig_heatmap <- function(H, outline) {
+fig_heatmap <- function(H, outline, fmt = "%.3f", unit = "points per SD x SD") {
   # H: trait (label), condition (label), estimate (mean), n_sig, n; outline: data frame trait, condition
   lim <- max(abs(H$estimate))
   ggplot(H, aes(condition, trait, fill = estimate)) + geom_tile(colour = "white", linewidth = 0.6) +
     geom_tile(data = outline, aes(condition, trait), inherit.aes = FALSE, fill = NA, colour = ink, linewidth = 0.9) +
-    geom_text(aes(label = sprintf("%.3f\n%d / %d", estimate, n_sig, n)), size = 2.6, lineheight = 0.9) +
-    scale_fill_gradient2(low = "#4a9fe0", mid = "white", high = "#c44536", limits = c(-lim, lim), name = "Mean product\n(points per SD x SD)") +
+    geom_text(aes(label = sprintf(paste0(fmt, "\n%d / %d"), estimate, n_sig, n)), size = 2.6, lineheight = 0.9) +
+    scale_fill_gradient2(low = "#4a9fe0", mid = "white", high = "#c44536", limits = c(-lim, lim), name = paste0("Mean product\n(", unit, ")")) +
     labs(x = NULL, y = NULL) + paper_theme() +
     theme(panel.grid = element_blank(), axis.text.x = element_text(angle = 35, hjust = 1), panel.border = element_blank(), legend.position = "right")
 }

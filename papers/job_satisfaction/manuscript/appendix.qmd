@@ -68,47 +68,46 @@ source("_setup.R")
 ```
 
 ```{r}
+# Word section breaks: each marks the end of a section with the given orientation.
+brk <- function(land) knitr::asis_output(paste0("\n```{=openxml}\n", if (land) sect_landscape else sect_portrait, "\n```\n"))
+tcap <- function(n, x) paste0(if (is_pdf) "" else paste0("Table A", n, ". "), x)
+star <- function(p) ifelse(p < .01, "***", ifelse(p < .05, "**", ifelse(p < .10, "*", "")))
+```
+
+```{r}
 #| label: tbl-dist
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A1. ", "Weighted distribution of job satisfaction by country (%)")'
+#| tbl-cap: !expr 'tcap(1, "Weighted distribution of job satisfaction by country (%)")'
 Dd <- S$distribution[S$distribution$country %in% info$country, ]
 tab <- do.call(rbind, lapply(sort(unique(Dd$country)), function(k) { x <- Dd[Dd$country == k, ]; x <- x[order(x$category), ]
   data.frame(Country = cname[[k]], `Extremely satisfied` = pc(x$share[1], 1), Satisfied = pc(x$share[2], 1), `Neither` = pc(x$share[3], 1), Dissatisfied = pc(x$share[4], 1), `Extremely dissatisfied` = pc(x$share[5], 1), n = big(x$n[1]), check.names = FALSE) }))
 tab <- tab[order(tab$Country), ]
-fin(kb(tab, row.names = FALSE, align = "lrrrrrr"), "Employees aged 25–65 with a satisfaction response; final survey weight. Item: 'All things considered, how satisfied are you with your current job?'")
+fin(kb(tab, row.names = FALSE, align = "lrrrrrr"), "Employees aged 25–65 with a satisfaction response; final survey weight. Item: 'All things considered, how satisfied are you with your current job?' Main outcome: extremely satisfied (first column). Not satisfied: the last 3 columns.")
 ```
 
 ```{r}
 #| label: tbl-flow-app
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A2. ", "Samples and coverage by country")'
+#| tbl-cap: !expr 'tcap(2, "Samples and coverage by country")'
 fw <- merge(S$flow1, info[c("country", "extended", "facets", "a1", "tenure", "occupation_source")], by = "country")
 fw <- merge(fw, S$pay_share, by = "country"); fw <- fw[order(cname[fw$country]), ]
 yn <- function(x) ifelse(x, if (is_pdf) "yes" else "✓", "")
 tab <- data.frame(Country = ifelse(fw$country %in% flag, paste0(cname[fw$country], " †"), cname[fw$country]), Employees = big(fw$analysis),
   `Pay deciles` = ifelse(fw$pay_share < 0.5, "", paste0(pc(fw$pay_share), "%")), `Support, voice` = yn(fw$extended),
-  Facets = yn(fw$facets), `Job cells` = yn(fw$a1), Tenure = yn(fw$tenure), `Occupation code` = fw$occupation_source, check.names = FALSE)
-fin(kb(tab, row.names = FALSE, align = "lrcccccl"), "Employees aged 25–65 with job satisfaction, the five traits, age, sex, education and numeracy. Pay deciles: share of the sample with a released earnings decile. † no earnings measure released; these countries are estimated without the pay block. Austria and Germany release neither occupation nor industry codes, so I cannot form occupational groups. Croatia, Ireland, and New Zealand release occupational skill levels (four groups) instead of ISCO codes.")
-```
-
-```{r}
-#| label: tbl-robust
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A3. ", "Robustness of the baseline premiums: countries with p < 0.05 in the expected direction (not satisfied)")'
-SB <- p1[p1$block %in% c("sens_base", "sens_nopay", "sens_pay_complete", "sens_nopay_complete", "sens_occupation", "sens_literacy", "sens_six_item", "sens_tenure", "sens_selfemployed"), ]
-specs <- c(sens_base = "Baseline (with pay decile)", sens_nopay = "Without pay decile", sens_pay_complete = "With pay decile, complete pay cases", sens_nopay_complete = "Without pay decile, complete pay cases",
-  sens_occupation = "Adding occupation", sens_literacy = "Literacy instead of numeracy", sens_six_item = "Six-item trait scales", sens_tenure = "Adding tenure", sens_selfemployed = "Including the self-employed")
-rows <- lapply(names(specs), function(b) { u <- SB[SB$block == b & SB$outcome == "not_satisfied", ]
-  data.frame(Specification = specs[[b]], Countries = length(unique(u$country)), t(sapply(traits, function(v) { x <- u[u$var == v, ]; sprintf("%d (%s)", sum(x$p < .05 & x$estimate < 0), f3(mean(x$estimate))) })), check.names = FALSE) })
-NL <- S$nonlinear; lg <- NL[NL$spec == "logit_not_satisfied", ]
-rows[[length(rows) + 1]] <- data.frame(Specification = "Logit, average marginal effects", Countries = length(unique(lg$country)), t(sapply(traits, function(v) { x <- lg[lg$var == v, ]; sprintf("%d (%s)", sum(x$p < .05 & x$estimate < 0), f3(mean(x$estimate))) })), check.names = FALSE)
-tab <- do.call(rbind, rows); names(tab)[3:7] <- tl[traits]
-fin(kb(tab, row.names = FALSE, align = "lrccccc"), "Countries with a significantly negative coefficient on 'not satisfied' at the 5% level, with the mean coefficient across countries in parentheses.")
+  Facets = yn(fw$facets), `Job groups` = yn(fw$a1), Tenure = yn(fw$tenure), `Occupation code` = fw$occupation_source, check.names = FALSE)
+fin(kb(tab, row.names = FALSE, align = "lrcccccl"), "Employees aged 25–65 with job satisfaction, the 5 traits, age, sex, education and numeracy. Pay deciles: share of the sample with a released earnings decile. † No earnings measure released; these countries are estimated without the pay block. Austria and Germany release neither occupation nor industry codes, so occupational groups cannot be formed. Croatia, Ireland, and New Zealand release occupational skill levels (4 groups) instead of ISCO codes.")
 ```
 
 ```{r}
 #| label: tbl-conditions-app
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A4. ", "Reported job conditions: items, blocks and coverage")'
-tab <- data.frame(Measure = c("Time pressure", "Repetitive tasks", "Physical work", "Change in work environment", "Autonomy", "Learning at work", "Social tasks", "Support", "Voice", "Skill underuse"),
-  Block = c("Job demands", "Job demands", "Job demands", "Job demands", "Job resources", "Job resources", "Job resources", "Job resources", "Job resources", "Skill underuse"),
-  Items = c("Working to tight deadlines or at very high speed (1 none of the time – 5 all of the time)",
+#| tbl-cap: !expr 'tcap(3, "Mediator variables: blocks, measures and coverage")'
+tab <- data.frame(Block = c("Pay", rep("Job characteristics", 7), rep("Job demands", 4), rep("Job resources", 5), "Skill underuse"),
+  Measure = c("Earnings decile", "Occupation", "Contract", "Weekly hours", "Firm size", "Sector", "Supervisory duties", "Tenure with employer",
+    "Time pressure", "Repetitive tasks", "Physical work", "Change in work environment", "Autonomy", "Learning at work", "Social tasks", "Support", "Voice", "Skill underuse"),
+  Items = c("Within-country decile of hourly earnings including bonuses (1–10); missing set to the country mean with an indicator",
+    "ISCO major group (9 groups; occupational skill level, 4 groups, in Croatia, Ireland and New Zealand)",
+    "Indefinite; fixed term; other", "Usual weekly hours: < 20, 20–34, 35–40 (reference), 41–48, > 48",
+    "Employees at the workplace: 1–10, 11–49, 50–249, 250–499, 500–999, 1,000 or more", "Private; public; non-profit",
+    "Supervises other employees (yes/no)", "Years since starting with the employer: 0–1, 2–4, 5–9 (reference), 10–19, 20 or more",
+    "Working to tight deadlines or at very high speed (1 none of the time – 5 all of the time)",
     "Short repetitive tasks (yes/no)", "Working physically for a long period (frequency 1–5)",
     "Number of areas in which the working environment changed (machinery, ICT, methods, outsourcing, products, client contact; 0–6)",
     "Choose or change the sequence of tasks, how to work, speed of work, working hours (1–5, mean)",
@@ -116,176 +115,260 @@ tab <- data.frame(Measure = c("Time pressure", "Repetitive tasks", "Physical wor
     "Sharing information, teaching, presenting, dealing with clients, influencing, negotiating (frequency, mean)",
     "Assistance available with workload; frequency of help from supervisor and co-workers (0–1)",
     "Involved in improving work organization; able to apply own ideas (reversed frequency, mean)",
-    "Skills higher than the job requires, vs matched"),
-  Countries = c(rep(nC, 7), n_ext, n_ext, nC), check.names = FALSE)
-fin(kb(tab, row.names = FALSE, align = "lllr"), wrap = list(`3` = "9cm"), "Each condition is standardized within country (weighted). Support and voice come from a module not fielded in Canada, Finland, Germany, Ireland, Lithuania, and Switzerland. The core set used in every country includes the first seven conditions and underuse of skills.")
+    "Skills higher than the job requires, against matched; skills lower and match unknown as separate categories"),
+  Countries = c(n_pay, nC, nC, nC, nC, nC, nC, n_ten, rep(nC, 7), n_ext, n_ext, nC), check.names = FALSE)
+fin(kb(tab, row.names = FALSE, align = "lllr"), size = 7.5, wrap = list(`3` = "8.5cm"), "Each reported condition is standardized within country (weighted); a missing condition is set to 0 with an indicator in its block. Categorical job characteristics enter as dummies with an 'unknown' category where needed; a category that is empty in a country is dropped. Support and voice come from a module not fielded in Canada, Finland, Germany, Ireland, Lithuania, and Switzerland.")
 ```
 
-```{=openxml}
-<w:p><w:pPr><w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1247" w:bottom="1417" w:left="1247" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:pPr></w:p>
+```{r}
+brk(FALSE)
 ```
 
 ```{r}
 #| label: tbl-cells
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A5. ", "Occupational groups: definitions, sizes and what they capture of each reported condition")'
+#| tbl-cap: !expr 'tcap(4, "Occupational groups: definitions, sizes and what they capture of each reported condition")'
 cd <- CD[CD$resolution == "finest" & CD$min_others == 10, ]; cd <- cd[order(cname[cd$country]), ]
-tab <- data.frame(Country = cname[cd$country], Employees = big(cd$n), `Groups defined` = cd$cells_defined, `Groups used` = cd$cells_used, `Median group size` = cd$median_cell_size,
-  `Share in fallback (occupation only)` = pc(cd$share_fallback), `Share with 1-digit occupation only` = pc(cd$share_occ1_only), `Share with industry unknown` = pc(cd$share_industry_unknown),
-  `Between-group share: time pressure` = pc(cd$between_time_pressure), `Reliability of group mean: time pressure` = f2(cd$reliability_time_pressure),
-  `Between-group share: autonomy` = pc(cd$between_autonomy), `Reliability: autonomy` = f2(cd$reliability_autonomy), check.names = FALSE)
-fin(kb(tab, row.names = FALSE, align = "lrrrrrrrrrrr"), land = TRUE, size = 7, "Groups are country × finest released occupation (2-digit ISCO where released, else 1-digit or the occupational skill level) × industry section; a group with fewer than ten other members falls back to the occupation alone. Between-group share: weighted share of the condition's variance lying between the groups used. Reliability: ICC(k) = (MSB − MSW)/MSB from a one-way ANOVA on the groups used (unweighted). Austria and Germany release no codes.")
+tab <- data.frame(Country = cname[cd$country], Employees = big(cd$n), `Groups defined` = cd$cells_defined, `Groups used` = cd$cells_used, `Median size` = cd$median_cell_size,
+  `Fallback (%)` = pc(cd$share_fallback), `1-digit only (%)` = pc(cd$share_occ1_only), `Industry unknown (%)` = pc(cd$share_industry_unknown),
+  `Time pressure: between (%)` = pc(cd$between_time_pressure), `Time pressure: reliability` = f2(cd$reliability_time_pressure),
+  `Autonomy: between (%)` = pc(cd$between_autonomy), `Autonomy: reliability` = f2(cd$reliability_autonomy), check.names = FALSE)
+fin(kb(tab, row.names = FALSE, align = "lrrrrrrrrrrr"), land = TRUE, size = 7.5, wrap = setNames(as.list(rep("1.6cm", 11)), 2:12),
+  "Groups are country × finest released occupation (2-digit ISCO where released, else 1-digit or the occupational skill level) × industry section. Fallback: share of workers whose group has fewer than 10 other members, so the occupation alone is used. 1-digit only: share with a 1-digit occupation code only. Between: weighted share of the condition's variance lying between the groups used. Reliability: ICC(k) = (MSB − MSW)/MSB from a one-way ANOVA on the groups used (unweighted). Austria and Germany release no codes.")
 ```
 
 ```{r}
 #| label: tbl-cellsens
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A6. ", "Sensitivity of the group split to the group definition: emotional stability and reported time pressure")'
+#| tbl-cap: !expr 'tcap(5, "Sensitivity of the group split to the group definition: emotional stability and reported time pressure")'
 variants <- c(A1 = "Finest occupation × industry, ≥ 10 others (main)", A1_min20 = "Finest occupation × industry, ≥ 20 others", A1_min30 = "Finest occupation × industry, ≥ 30 others", A1_1digit = "1-digit occupation × industry in every country, ≥ 10 others")
 tab <- do.call(rbind, lapply(names(variants), function(m) { p <- perc("time_pressure", model = m); a <- actsel("time_pressure", model = m)
-  data.frame(Variant = variants[[m]], Countries = nrow(p), `Deviation: mean coefficient` = f3(mean(p$estimate)), `Deviation: negative` = sum(p$estimate < 0), `Deviation: significant (p < 0.05)` = sum(p$p < .05 & p$estimate < 0),
-    `Group mean: mean coefficient` = f3(mean(a$estimate)), `Group mean: significant` = sum(a$p < .05), `Group mean: equivalent to 0` = equiv(a, eq_margin_cell), check.names = FALSE) }))
-fin(kb(tab, row.names = FALSE, align = "lrcccccc"), land = TRUE, size = 7, wrap = list(`1` = "5cm"), sprintf("Coefficient of emotional stability on the worker's deviation from the group mean of reported time pressure, and on the group mean itself (SD per SD), from the appraisal model with pay decile and background controls. 'Equivalent to 0': 90%% interval within ±%.2f SD.", eq_margin_cell))
-```
-
-```{=openxml}
-<w:p><w:pPr><w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1247" w:right="1417" w:bottom="1247" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:pPr></w:p>
+  data.frame(Variant = variants[[m]], Countries = nrow(p), `Deviation: mean` = f3(mean(p$estimate)), `Deviation: negative` = sum(p$estimate < 0), `Deviation: p < 0.05` = sum(p$p < .05 & p$estimate < 0),
+    `Group mean: mean` = f3(mean(a$estimate)), `Group mean: p < 0.05` = sum(a$p < .05), `Group mean: equivalent to 0` = equiv(a, eq_margin_cell), check.names = FALSE) }))
+fin(kb(tab, row.names = FALSE, align = "lrcccccc"), land = TRUE, size = 7.5, wrap = c(list(`1` = "5cm"), setNames(as.list(rep("2cm", 6)), 3:8)), sprintf("Coefficient of emotional stability on the worker's deviation from the group mean of reported time pressure, and on the group mean itself (SD per SD), from the appraisal model with pay decile and background controls. 'Equivalent to 0': 90%% interval within ±%.2f SD.", eq_margin_cell))
 ```
 
 ```{r}
-#| label: tbl-med-adj
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A7. ", "Causal mediation: countries with a significant indirect effect after Benjamini-Hochberg adjustment")'
-ml <- c(all = "All blocks jointly", pay = "Pay", demands = "Job demands", resources = "Job resources", underuse = "Skill underuse")
-tab <- data.frame(Mediator = unname(ml), Countries = sapply(names(ml), function(m) nmed(m, "EMOS")), check.names = FALSE)
-for (v in traits) tab[[tl[[v]]]] <- sapply(names(ml), function(m) sprintf("%d+ / %d−", nposq(m, v), nnegq(m, v)))
-fin(kb(tab, row.names = FALSE, align = "lrccccc"), wrap = list(`1` = "4.5cm"), "Counterpart of Table 2: number of countries in which the ACME is significantly positive / negative after Benjamini–Hochberg adjustment across countries and traits within each mediator.")
+brk(TRUE)
 ```
 
 ```{r}
-#| label: tbl-perc-adj
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A8. ", "Traits and reported job conditions: counts after Benjamini-Hochberg adjustment")'
-cntq <- function(x) paste0(sum(x$q < .05 & x$estimate < 0), " / ", sum(x$q < .05 & x$estimate > 0))
-tab <- do.call(rbind, lapply(conds, function(k) { p <- perc(k); a <- actsel(k); px <- perc(k, "EXTR"); ax <- actsel(k, "EXTR")
-  data.frame(Condition = cl[[k]], Countries = nrow(p), `ES: deviation (− / +)` = cntq(p), `ES: group mean (− / +)` = cntq(a),
-    `E: deviation (− / +)` = cntq(px), `E: group mean (− / +)` = cntq(ax), check.names = FALSE) }))
-fin(kb(tab, row.names = FALSE, align = "lrcccc"), "Counterpart of Table A13: number of countries with a significantly negative / positive coefficient after Benjamini–Hochberg adjustment across countries and traits within each outcome.")
-```
-
-```{=openxml}
-<w:p><w:pPr><w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1247" w:bottom="1417" w:left="1247" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:pPr></w:p>
+# ---- Full specifications: labels and table builder ----
+iscol <- c(`2` = "professionals", `3` = "technicians", `4` = "clerical support", `5` = "service and sales", `6` = "skilled agricultural",
+  `7` = "craft and trades", `8` = "plant and machine operators", `9` = "elementary")
+lab_term <- c(`(Intercept)` = "Intercept", tl, age3 = "Age 35–44", age4 = "Age 45–54", age5 = "Age 55–65", gender2 = "Female",
+  education2 = "Education: upper secondary", education3 = "Education: post-secondary non-tertiary", education4 = "Education: tertiary professional",
+  education5 = "Education: bachelor", education6 = "Education: master or research", born2 = "Born abroad", bornUnknown = "Birthplace unknown",
+  mother2 = "Mother: ISCED 3–4", mother3 = "Mother: ISCED 5–8", motherUnknown = "Mother's education unknown",
+  father2 = "Father: ISCED 3–4", father3 = "Father: ISCED 5–8", fatherUnknown = "Father's education unknown", numeracy = "Numeracy (per 50 points)",
+  pay = "Earnings decile", pay_miss = "Earnings decile missing",
+  setNames(paste0("Occupation: ", iscol, ifelse(as.integer(names(iscol)) <= 4, paste0(" / skill level ", names(iscol)), "")), paste0("occupation", names(iscol))), occupationUnknown = "Occupation unknown",
+  contract2 = "Fixed-term contract", contract3 = "Other contract", contractUnknown = "Contract unknown",
+  `hours<20` = "Hours < 20", `hours20-34` = "Hours 20–34", `hours41-48` = "Hours 41–48", `hours>48` = "Hours > 48", hoursUnknown = "Hours unknown",
+  firm_size2 = "Firm size 11–49", firm_size3 = "Firm size 50–249", firm_size4 = "Firm size 250–499", firm_size5 = "Firm size 500–999", firm_size6 = "Firm size 1,000+", firm_sizeUnknown = "Firm size unknown",
+  sector2 = "Public sector", sector3 = "Non-profit sector", sectorUnknown = "Sector unknown", manages2 = "No supervisory duties", managesUnknown = "Supervision unknown",
+  `tenure0-1` = "Tenure 0–1 years", `tenure2-4` = "Tenure 2–4 years", `tenure10-19` = "Tenure 10–19 years", `tenure20+` = "Tenure 20+ years", tenureUnknown = "Tenure unknown",
+  setNames(cl[c("time_pressure", "repetitive", "physical", "change", "autonomy", "learning", "social", "support", "voice")], c("time_pressure", "repetitive", "physical", "change", "autonomy", "learning", "social", "support", "voice")),
+  setNames(paste(cl[c("time_pressure", "repetitive", "physical", "change", "autonomy", "learning", "social", "support", "voice")], "missing"), paste0(c("time_pressure", "repetitive", "physical", "change", "autonomy", "learning", "social", "support", "voice"), "_miss")),
+  underuse = "Skill underuse", deficit = "Skills lower than required", match_unknown = "Skill match unknown")
+spec_table <- function(eq, cc) {
+  u <- MC[MC$outcome == o & MC$eq == eq & MC$country %in% cc, ]
+  terms <- intersect(names(lab_term), unique(u$term))
+  tab <- data.frame(Variable = unname(lab_term[terms]), check.names = FALSE)
+  for (k in cc) { x <- u[u$country == k, ]; x <- x[match(terms, x$term), ]
+    tab[[cname[[k]]]] <- ifelse(is.na(x$estimate), "", sprintf("%s%s (%s)", f3(x$estimate), star(x$p), f3(x$se))) }
+  ex <- function(f) c(sapply(cc, function(k) f(u[u$country == k, ][1, ])))
+  tab <- rbind(tab, setNames(data.frame("N", t(ex(function(r) big(r$n)))), names(tab)), setNames(data.frame("R²", t(ex(function(r) f3(r$r2)))), names(tab)))
+  tab
+}
+cgroups <- split(sort(info$country), rep(1:3, c(8, 8, 7)))
+spec_note <- function(eq) paste0(if (eq == "total") "Total-effect equation (Equation 1): " else "Outcome equation of the mediation model, with all mediator variables, whose coefficients on the traits are the direct effects: ",
+  "linear probability model for being extremely satisfied, weighted least squares with the final survey weight. Coefficient (standard error); *** p < 0.01, ** p < 0.05, * p < 0.10. Traits are national z-scores. Reference categories: age 25–34, male, lower secondary education or less, born in the country, parent with ISCED 0–2",
+  if (eq == "outcome") ", managers (occupational skill level 1 in Croatia, Ireland and New Zealand), indefinite contract, 35–40 hours, firm size 1–10, private sector, supervises others, tenure 5–9 years, skills matched; reported conditions are within-country z-scores" else "",
+  ". Empty cell: not released or no variation in the country. Countries without earnings deciles have no pay terms.")
 ```
 
 ```{r}
-#| label: tbl-reactivity-app
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A9. ", "Reactivity: pre-specified trait-by-condition products and placebos")'
-tab <- do.call(rbind, lapply(pair_def$pair, function(p) { d <- pair_def[pair_def$pair == p, ]; r <- rsum(p)
-  data.frame(Hypothesis = d$hyp, `Trait × condition` = paste(tl[[d$trait]], "×", tolower(cl[[d$condition]])),
-    Predicted = c(`1` = "+", `-1` = "−", `0` = "0")[as.character(d$sign)], Countries = r[["n"]],
-    `Mean [95% CI]` = ci_txt(r[["mean"]], r[["lo"]], r[["hi"]]),
-    `Predicted sign, significant after adjustment` = ifelse(is.na(r[["pred"]]), "–", r[["pred"]]), `p < 0.05 unadjusted` = r[["nominal"]],
-    `Same side as predicted` = ifelse(d$sign == 0, "–", paste0(r[["sameside"]], " / ", r[["n"]])),
-    `Equivalent to 0` = paste0(r[["equiv"]], " / ", r[["n"]]), check.names = FALSE) }))
-fin(kb(tab, row.names = FALSE, align = "llcrccrcc"), land = TRUE, wrap = list(`2` = "4cm"), sprintf("Each product is the change in the satisfaction slope of the condition (per SD) per SD of the trait, from one model per country with all products, the five traits, all job conditions, skill underuse, the pay decile, structural job controls and background controls. Mean across countries with 95%% interval. Adjustment: Benjamini–Hochberg across countries and the eight tested pairs, and separately across the placebos. 'Equivalent to 0': countries in which the 90%% interval lies within ±%.3f points.", eq_margin_int))
+#| label: tbl-spec-total1
+#| tbl-cap: !expr 'tcap(6, "Full specification of the total-effect equation, extremely satisfied (countries 1–8)")'
+fin(kb(spec_table("total", cgroups[[1]]), row.names = FALSE, align = paste0("l", strrep("c", 8)), longtable = TRUE), land = TRUE, size = 6.5, long = TRUE, spec_note("total"))
 ```
 
-```{=openxml}
-<w:p><w:pPr><w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1247" w:right="1417" w:bottom="1247" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:pPr></w:p>
+```{r}
+#| label: tbl-spec-total2
+#| tbl-cap: !expr 'tcap(7, "Full specification of the total-effect equation, extremely satisfied (countries 9–16)")'
+fin(kb(spec_table("total", cgroups[[2]]), row.names = FALSE, align = paste0("l", strrep("c", 8)), longtable = TRUE), land = TRUE, size = 6.5, long = TRUE, spec_note("total"))
+```
+
+```{r}
+#| label: tbl-spec-total3
+#| tbl-cap: !expr 'tcap(8, "Full specification of the total-effect equation, extremely satisfied (countries 17–23)")'
+fin(kb(spec_table("total", cgroups[[3]]), row.names = FALSE, align = paste0("l", strrep("c", 7)), longtable = TRUE), land = TRUE, size = 6.5, long = TRUE, spec_note("total"))
+```
+
+```{r}
+#| label: tbl-spec-out1
+#| tbl-cap: !expr 'tcap(9, "Full specification of the outcome equation with all mediators, extremely satisfied (countries 1–8)")'
+fin(kb(spec_table("outcome", cgroups[[1]]), row.names = FALSE, align = paste0("l", strrep("c", 8)), longtable = TRUE), land = TRUE, size = 6.5, long = TRUE, spec_note("outcome"))
+```
+
+```{r}
+#| label: tbl-spec-out2
+#| tbl-cap: !expr 'tcap(10, "Full specification of the outcome equation with all mediators, extremely satisfied (countries 9–16)")'
+fin(kb(spec_table("outcome", cgroups[[2]]), row.names = FALSE, align = paste0("l", strrep("c", 8)), longtable = TRUE), land = TRUE, size = 6.5, long = TRUE, spec_note("outcome"))
+```
+
+```{r}
+#| label: tbl-spec-out3
+#| tbl-cap: !expr 'tcap(11, "Full specification of the outcome equation with all mediators, extremely satisfied (countries 17–23)")'
+fin(kb(spec_table("outcome", cgroups[[3]]), row.names = FALSE, align = paste0("l", strrep("c", 7)), longtable = TRUE), land = TRUE, size = 6.5, long = TRUE, spec_note("outcome"))
+```
+
+```{r}
+brk(TRUE)
 ```
 
 ```{r}
 #| label: tbl-p1-full
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A10. ", "Total effect of each trait on the 1-5 satisfaction score by country (mediate)")'
+#| tbl-cap: !expr 'tcap(12, "Total effect of each trait on the probability of being extremely satisfied, by country (mediate)")'
 w <- do.call(rbind, lapply(sort(unique(TOT$country)), function(k) {
   r <- data.frame(Country = ifelse(k %in% flag, paste0(cname[[k]], " †"), cname[[k]]), n = big(TOT$n[TOT$country == k][1]))
-  for (v in traits) { a <- TOT[TOT$country == k & TOT$var == v, ]; r[[tl[[v]]]] <- sprintf("%s%s (%s)", f3(a$estimate), ifelse(a$p < .01, "**", ifelse(a$p < .05, "*", ifelse(a$p < .10, "†", ""))), f3(a$se)) }
+  for (v in traits) { a <- TOT[TOT$country == k & TOT$var == v, ]; r[[tl[[v]]]] <- sprintf("%s%s (%s)", pp(a$estimate), star(a$p), pp(a$se)) }
   r }))
 sm <- data.frame(Country = c("Mean of countries [95% CI]", "Significant after adjustment"), n = c("", ""))
-for (v in traits) { ci <- sm_ci(TOT[TOT$var == v, ]); sm[[tl[[v]]]] <- c(ci[["mean"]], paste0(kq(v, u = TOT), " of ", nC)) }
+for (v in traits) sm[[tl[[v]]]] <- c(sm_pp(TOT[TOT$var == v, ]), paste0(kq(v, u = TOT), " of ", nC))
 w <- rbind(w, sm)
-fin(kb(w, row.names = FALSE, align = "lrccccc"), size = 7, "Total effects from mediate() (points on the 1–5 scale per SD of the trait), at the same age, sex, education, birthplace, parental education and numeracy; standard deviation of the quasi-Bayesian draws in parentheses. ** p < 0.01, * p < 0.05, † p < 0.10. Last row: countries with a positive effect significant after Benjamini–Hochberg adjustment across countries. † after a country name: no earnings decile released.")
+fin(kb(w, row.names = FALSE, align = "lrccccc"), size = 7, "Total effects from mediate() in percentage points per SD of the trait, at the same age, sex, education, birthplace, parental education and numeracy; standard deviation of the quasi-Bayesian draws in parentheses. *** p < 0.01, ** p < 0.05, * p < 0.10. Last row: countries with a positive effect significant after Benjamini–Hochberg adjustment across countries. † after a country name: no earnings decile released.")
 ```
 
 ```{r}
 #| label: tbl-h1-app
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A11. ", "The subjective reward to non-cognitive skills: four estimands, summarized across countries")'
-row_of <- function(v, u, lab) { ci <- sm_ci(u[u$var == v, ]); data.frame(Trait = tl[[v]], Estimand = lab, Countries = length(unique(u$country)),
-  `Mean [95% CI]` = ci[["mean"]], `p < 0.05` = kp5(v, u = u), `After adjustment` = kq(v, u = u), check.names = FALSE) }
+#| tbl-cap: !expr 'tcap(13, "The subjective reward to non-cognitive skills: 4 estimands, summarized across countries")'
+row_of <- function(v, u, lab) data.frame(Trait = tl[[v]], Estimand = lab, Countries = length(unique(u$country)),
+  `Mean, pp [95% CI]` = sm_pp(u[u$var == v, ]), `p < 0.05` = kp5(v, u = u), `After adjustment` = kq(v, u = u), check.names = FALSE)
 tab <- do.call(rbind, lapply(traits, function(v) rbind(row_of(v, TOT, "Total effect (mediate)"), row_of(v, Ks, "At the same pay decile (regression)"),
   row_of(v, KO, "At the same pay decile and occupation (regression)"), row_of(v, ADE, "Direct effect (mediate)"))))
 tab$Trait[duplicated(tab$Trait)] <- ""
-fin(kb(tab, row.names = FALSE, align = "llrccc"), "One model per country on the 1–5 satisfaction score; all estimands include age, sex, education, birthplace, parental education and numeracy. Total and direct effects: mediate(), Table 2. Regression estimands add the within-country earnings decile (20 countries; the other three enter without it) and, in the second, the released occupation code; weighted least squares. Mean across countries with its 95% interval from the country standard errors. Counts: countries with a positive estimate significant at the 5% level, and after Benjamini–Hochberg adjustment across countries.")
+fin(kb(tab, row.names = FALSE, align = "llrccc"), sprintf("One model per country for being extremely satisfied (linear probability model); all estimands include age, sex, education, birthplace, parental education and numeracy. Total and direct effects: mediate(), Table 3. Regression estimands add the within-country earnings decile (%d countries; the other 3 enter without it) and, in the second, the released occupation code; weighted least squares. Mean across countries with its 95%% interval from the country standard errors. Counts: countries with a positive estimate significant at the 5%% level, and after Benjamini–Hochberg adjustment across countries.", n_pay))
 ```
 
-```{=openxml}
-<w:p><w:pPr><w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1247" w:bottom="1417" w:left="1247" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:pPr></w:p>
+```{r}
+brk(FALSE)
 ```
 
 ```{r}
 #| label: tbl-mediation-app
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A12. ", "ACME through the occupational-group mean and through the worker''s deviation from it, by reported condition")'
+#| tbl-cap: !expr 'tcap(14, "ACME through the occupational-group mean and through the worker''s deviation from it, by reported condition")'
 cm <- c(time_pressure = "Time pressure", repetitive = "Repetitive tasks", physical = "Physical work", change = "Change in work environment",
   autonomy = "Autonomy", learning = "Learning at work", social = "Social tasks", support = "Support", voice = "Voice")
 rows <- expand.grid(part = c("mean", "dev"), m = names(cm), stringsAsFactors = FALSE)
 tab <- data.frame(Condition = ifelse(rows$part == "mean", cm[rows$m], ""), Part = ifelse(rows$part == "mean", "Group mean", "Deviation"),
   Countries = mapply(function(m, pt) nmed(paste0(m, "_", pt), "EMOS"), rows$m, rows$part), check.names = FALSE)
 for (v in traits) tab[[tl[[v]]]] <- mapply(function(m, pt) { a <- acm(paste0(m, "_", pt), v)
-  sprintf("%s  [%d+ / %d−]", f3(mean(a$estimate)), sum(a$p < .05 & a$estimate > 0), sum(a$p < .05 & a$estimate < 0)) }, rows$m, rows$part)
-fin(kb(tab, row.names = FALSE, align = "llrccccc"), land = TRUE, "Each cell: mean across countries of the ACME (satisfaction points per SD of the trait), and in brackets the number of countries in which it is significantly positive / negative at the 5% level. Estimates from mediate() with 1,000 quasi-Bayesian draws: every condition's group mean and deviation enter one outcome equation together with pay and skill underuse, each as its own mediator; covariates as in Table 2. Group mean: weighted leave-one-out mean of the worker's occupation-by-industry group. Austria and Germany excluded; support and voice only where the extended module is fielded.")
+  sprintf("%s  [%d+ / %d−]", pp(mean(a$estimate), 2), sum(a$p < .05 & a$estimate > 0), sum(a$p < .05 & a$estimate < 0)) }, rows$m, rows$part)
+fin(kb(tab, row.names = FALSE, align = "llrccccc"), land = TRUE, size = 7.5, "Each cell: mean across countries of the ACME (percentage points of the probability of being extremely satisfied per SD of the trait), and in brackets the number of countries in which it is significantly positive / negative at the 5% level. Estimates from mediate() with 1,000 quasi-Bayesian draws: every condition's group mean and deviation enter one outcome equation together with pay, job characteristics and skill underuse, each as its own mediator; covariates as in Table 3. Group mean: weighted leave-one-out mean of the worker's occupation-by-industry group. Austria and Germany excluded; support and voice only where the extended module is fielded.")
 ```
 
 ```{r}
 #| label: tbl-perceived-app
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A13. ", "Traits and reported job conditions: deviation of each worker from the occupational-group mean versus the group mean")'
-conds <- c("time_pressure", "repetitive", "physical", "change", "autonomy", "learning", "social", "support", "voice")
+#| tbl-cap: !expr 'tcap(15, "Traits and reported job conditions: deviation of each worker from the occupational-group mean versus the group mean")'
 cnt <- function(x) paste0(sum(x$p < .05 & x$estimate < 0), " / ", sum(x$p < .05 & x$estimate > 0))
 tab <- do.call(rbind, lapply(conds, function(k) { p <- perc(k); a <- actsel(k); px <- perc(k, "EXTR"); ax <- actsel(k, "EXTR")
   data.frame(Condition = cl[[k]], Countries = nrow(p),
     `ES: deviation, mean (− / +)` = paste0(f3(mean(p$estimate)), " (", cnt(p), ")"), `ES: group mean (− / +)` = paste0(f3(mean(a$estimate)), " (", cnt(a), ")"),
     `ES: group mean equivalent to 0` = paste0(equiv(a, eq_margin_cell), " / ", nrow(a)),
     `E: deviation, mean (− / +)` = paste0(f3(mean(px$estimate)), " (", cnt(px), ")"), `E: group mean (− / +)` = paste0(f3(mean(ax$estimate)), " (", cnt(ax), ")"), check.names = FALSE) }))
-fin(kb(tab, row.names = FALSE, align = "lrccccc"), land = TRUE, sprintf("Each condition's deviation from the occupational-group mean, and the group mean itself, is regressed on the five traits, the pay decile, and background controls. Cells give the mean coefficient across countries (SD of the condition per SD of the trait) and, in parentheses, the number of countries with a significantly negative / positive coefficient at the 5%% level for emotional stability (ES) and extraversion (E); counts after adjustment in Table A8. 'Equivalent to 0': countries in which the 90%% interval of the group-mean coefficient lies within ±%.2f SD. Austria and Germany (no occupation or industry codes) excluded.", eq_margin_cell))
-```
-
-```{=openxml}
-<w:p><w:pPr><w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1247" w:right="1417" w:bottom="1247" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:pPr></w:p>
+fin(kb(tab, row.names = FALSE, align = "lrccccc"), land = TRUE, size = 7.5, sprintf("Each condition's deviation from the occupational-group mean, and the group mean itself, is regressed on the 5 traits, the pay decile, and background controls. Cells give the mean coefficient across countries (SD of the condition per SD of the trait) and, in parentheses, the number of countries with a significantly negative / positive coefficient at the 5%% level for emotional stability (ES) and extraversion (E); counts after adjustment in Table A21. 'Equivalent to 0': countries in which the 90%% interval of the group-mean coefficient lies within ±%.2f SD. Austria and Germany (no occupation or industry codes) excluded.", eq_margin_cell))
 ```
 
 ```{r}
 #| label: fig-facets-country
-#| fig-cap: !expr 'paste0(if (is_pdf) "" else "Fig. A1. ", "Facet coefficients by country. Coefficients of the 15 BFI-2 facets, entered together with the pay decile and controls, on the 1-5 satisfaction score, in the 12 countries with facet scores; 95% intervals. Filled: p < 0.05; grey: p < 0.10; hollow: neither. Bottom row: mean across countries with 95% interval.")'
+#| fig-cap: !expr 'paste0(if (is_pdf) "" else "Fig. A1. ", "Facet coefficients by country. Coefficients of the 15 BFI-2 facets, entered together with the pay decile and controls, on the probability of being extremely satisfied (percentage points per SD), in the 12 countries with facet scores; 95% intervals. Filled: p < 0.05; grey: p < 0.10; hollow: neither. Bottom row: mean across countries with 95% interval.")'
 #| fig-height: 13
 #| fig-width: 12
-fl2 <- setNames(paste0(tl[sub("_.*", "", names(fl))], "\n", fls), names(fl))
-u <- FAo[, c("country", "var", "estimate", "se", "lower", "upper", "p")]; u$panel <- fl2[u$var]
-fig_country_dots(u, unname(fl2), cname, character(), "Satisfaction points per SD of the facet, 95% interval") + facet_wrap(~ panel, nrow = 3) + theme(strip.text = element_text(size = 9, lineheight = 0.9))
+u <- FAo[, c("country", "var", "estimate", "se", "lower", "upper", "p")]; u[c("estimate", "se", "lower", "upper")] <- 100 * u[c("estimate", "se", "lower", "upper")]; u$panel <- fl2[u$var]
+fig_country_dots(u, unname(fl2), cname, character(), "Percentage points per SD of the facet, 95% interval") + facet_wrap(~ panel, nrow = 3) + theme(strip.text = element_text(size = 9, lineheight = 0.9))
 ```
 
-```{=openxml}
-<w:p><w:pPr><w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1247" w:bottom="1417" w:left="1247" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:pPr></w:p>
+```{r}
+brk(TRUE)
+```
+
+```{r}
+#| label: tbl-reactivity-app
+#| tbl-cap: !expr 'tcap(16, "Reactivity: pre-specified trait-by-condition products and placebos")'
+tab <- do.call(rbind, lapply(pair_def$pair, function(p) { d <- pair_def[pair_def$pair == p, ]; r <- rsum(p)
+  data.frame(Hypothesis = d$hyp, `Trait × condition` = paste(tl[[d$trait]], "×", tolower(cl[[d$condition]])),
+    Predicted = c(`1` = "+", `-1` = "−", `0` = "0")[as.character(d$sign)], Countries = r[["n"]],
+    `Mean, pp [95% CI]` = ci_txt(100 * r[["mean"]], 100 * r[["lo"]], 100 * r[["hi"]], 2),
+    `Predicted sign, significant after adjustment` = ifelse(is.na(r[["pred"]]), "–", r[["pred"]]), `p < 0.05 unadjusted` = r[["nominal"]],
+    `Same side as predicted` = ifelse(d$sign == 0, "–", paste0(r[["sameside"]], " / ", r[["n"]])),
+    `Equivalent to 0` = paste0(r[["equiv"]], " / ", r[["n"]]), check.names = FALSE) }))
+fin(kb(tab, row.names = FALSE, align = "llcrccrcc"), land = TRUE, size = 7.5, wrap = list(`2` = "4cm", `6` = "2.5cm"), sprintf("Each product is the change in the slope of the condition (per SD) on the probability of being extremely satisfied, per SD of the trait, in percentage points, from 1 model per country with all products, the 5 traits, all job conditions, skill underuse, the pay decile, structural job controls and background controls. Mean across countries with 95%% interval. Adjustment: Benjamini–Hochberg across countries and the 8 tested pairs, and separately across the placebos. 'Equivalent to 0': countries in which the 90%% interval lies within ±%s percentage points.", pp(eq_margin_int)))
 ```
 
 ```{r}
 #| label: tbl-oster
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A14. ", "Oster (2019) sensitivity of the trait premiums, summarized across countries")'
+#| tbl-cap: !expr 'tcap(17, "Oster (2019) sensitivity of the trait premiums, summarized across countries")'
 tab <- do.call(rbind, lapply(traits, function(v) { u <- OS[OS$trait == v, ]
-  data.frame(Trait = tl[[v]], `Restricted coefficient (mean)` = f3(mean(u$b_restricted)), `Full coefficient (mean)` = f3(mean(u$b_full)), `R² restricted → full (mean)` = sprintf("%.3f → %.3f", mean(u$R2_restricted), mean(u$R2_full)),
-    `δ for β = 0 (median)` = f2(median(u$delta)), `δ > 1 or negative` = paste0(sum(u$delta > 1 | u$delta < 0), " / ", nrow(u)), `Bias-adjusted β at δ = 1 (mean)` = f3(mean(u$beta_star)), `Bias-adjusted β > 0` = paste0(sum(u$beta_star > 0), " / ", nrow(u)), check.names = FALSE) }))
-fin(kb(tab, row.names = FALSE, align = "lccccccc"), land = TRUE, size = 7, "Restricted model: traits, age and sex. Full model: pay decile, background controls, numeracy, structural job controls and all core job conditions. Rmax = 1.3 × R² of the full model. Point estimates with the final weight and the mean of the plausible values. Masten and Poirier (2022) caution that the sign can change under far less confounding than δ for β = 0 suggests.")
+  data.frame(Trait = tl[[v]], `Restricted coefficient, pp (mean)` = pp(mean(u$b_restricted)), `Full coefficient, pp (mean)` = pp(mean(u$b_full)), `R² restricted → full (mean)` = sprintf("%.3f → %.3f", mean(u$R2_restricted), mean(u$R2_full)),
+    `δ for β = 0 (median)` = f2(median(u$delta)), `δ > 1 or negative` = paste0(sum(u$delta > 1 | u$delta < 0), " / ", nrow(u)), `Bias-adjusted β at δ = 1, pp (mean)` = pp(mean(u$beta_star)), `Bias-adjusted β > 0` = paste0(sum(u$beta_star > 0), " / ", nrow(u)), check.names = FALSE) }))
+fin(kb(tab, row.names = FALSE, align = "lccccccc"), land = TRUE, size = 7.5, "Outcome: extremely satisfied (linear probability model). Restricted model: traits, age and sex. Full model: pay decile, background controls, numeracy, structural job controls and all core job conditions. Rmax = 1.3 × R² of the full model. Point estimates with the final weight and the mean of the plausible values. Masten and Poirier (2022) caution that the sign can change under far less confounding than δ for β = 0 suggests.")
 ```
 
 ```{r}
-#| label: tbl-verify-app
-#| tbl-cap: !expr 'paste0(if (is_pdf) "" else "Table A15. ", "Threats to the reading of the subjective reward, and what each check establishes")'
-os_tab <- sapply(traits, function(v) { u <- OS[OS$trait == v, ]; paste0(sum(u$beta_star > 0), " / ", nrow(u)) })
-ls_sig <- sapply(traits, function(v) { b <- LSL[LSL$var == v, ]; paste0(sum(b$p < .05 & b$estimate > 0), " / ", nrow(b)) })
-ls_drop <- sapply(traits, function(v) { a <- LSJ[LSJ$var == v, ]; b <- LSL[LSL$var == v, ]; m <- merge(a, b, by = "country"); paste0(pc(median(1 - m$estimate.y / m$estimate.x)), "%") })
-ten <- sapply(traits, function(v) { u <- TEN[TEN$var == paste0(v, ":long_tenure"), ]; paste0(sum(u$p < .05), " / ", nrow(u)) })
-tab <- data.frame(Threat = c("Unobserved worker differences", "Common reporting disposition", "Common reporting disposition", "Reverse causality (job shapes trait report)"),
-  Check = c("Oster (2019): bias-adjusted coefficient at δ = 1 positive", "Significant with reported conditions and life satisfaction conditioned on", "Median reduction from conditioning on life satisfaction", "Trait × long-tenure product significant"),
-  rbind(os_tab, ls_sig, ls_drop, ten),
-  `What it can establish` = c("Sensitivity to one proportional-selection assumption; not general robustness", "An alternative conditioning set; removes real overlap as well as bias", "Upper bound on the share removable by one general disposition", "Rules out a gradual tenure gradient only"), check.names = FALSE)
-names(tab)[3:7] <- tl[traits]
-fin(kb(tab, row.names = FALSE, align = "llcccccl"), land = TRUE, wrap = list(`1` = "3cm", `2` = "4.5cm", `8` = "5cm"), "Oster (2019): restricted model (traits, age, sex), full model (pay decile, background controls and all core job conditions), Rmax = 1.3 × R² of the full model; countries in which the bias-adjusted coefficient keeps its sign. Life satisfaction (0–10) is added to the model with all core job conditions. Tenure: countries with a released job start year. Counts at the 5% level. Entries for conscientiousness and open-mindedness are not informative because their premiums are near zero.")
+#| label: tbl-ordinal-app
+#| tbl-cap: !expr 'tcap(18, "Alternative outcomes and models: mean effect of 1 SD of each trait and countries significant at the 5% level")'
+cell <- function(x, s, sc = 100, d = 1) sprintf(paste0("%.", d, "f (%d)"), sc * mean(x$estimate), sum(x$p < .05 & sign(x$estimate) == s))
+medrow <- function(out, s, sc, d, lab_t, lab_s) {
+  tt <- with_med(out, sapply(traits, function(v) cell(TOT[TOT$var == v, ], s, sc, d)))
+  sh <- with_med(out, sapply(traits, function(v) pc(medshare(v))))
+  rbind(c("Mediation (mediate)", lab_t, "Total effect", tt), c("", "", "Share through the 5 blocks (%)", sh)) }
+ordrow <- function(kind, s, lab) rbind(c("Ordered probit", lab, "Without mediators", sapply(traits, function(v) cell(ordc(kind, v, "none"), s))),
+  c("", "", "With all mediator variables", sapply(traits, function(v) cell(ordc(kind, v, "all"), s))))
+lgrow <- function(out, s, lab) c("Logit, marginal effect", lab, "At the same pay decile", sapply(traits, function(v) { u <- NLv[NLv$spec == paste0("logit_", out) & NLv$var == v, ]; cell(u, s) }))
+tab <- as.data.frame(rbind(medrow("very_satisfied", 1, 100, 1, "Extremely satisfied (main)"), medrow("not_satisfied", -1, 100, 1, "Not satisfied"),
+  medrow("satisfaction_score", 1, 1, 3, "1–5 score (cardinal)"), ordrow("top", 1, "P(extremely satisfied)"), ordrow("bottom", -1, "P(not satisfied)"),
+  lgrow("very_satisfied", 1, "Extremely satisfied"), lgrow("not_satisfied", -1, "Not satisfied")), stringsAsFactors = FALSE)
+names(tab) <- c("Model", "Outcome", "Estimate", tl[traits])
+fin(kb(tab, row.names = FALSE, align = "lllccccc"), land = TRUE, size = 7.5, wrap = list(`1` = "2.6cm", `2` = "3cm", `3` = "3.6cm"), "Cells: mean across the 23 countries in percentage points (1–5 score: points) and, in parentheses, countries significant at the 5% level in the expected direction (positive for the top of the scale, negative for not satisfied). Mediation: linear probability or linear models as in Table 3. Ordered probit: weighted MASS::polr of the 1–5 score on the traits and background controls, without and with every mediator variable; effects on the probability of the top category and of the 3 lowest categories averaged over the sample, intervals from 500 draws of the coefficients. Logit: weighted average marginal effects with the pay decile and background controls.")
 ```
 
-```{=openxml}
-<w:p><w:pPr><w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1247" w:right="1417" w:bottom="1247" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:pPr></w:p>
+```{r}
+brk(TRUE)
+```
+
+```{r}
+#| label: tbl-robust
+#| tbl-cap: !expr 'tcap(19, "Robustness of the baseline premiums: countries with p < 0.05 in the expected direction (extremely satisfied)")'
+SB <- p1[p1$block %in% c("sens_base", "sens_nopay", "sens_pay_complete", "sens_nopay_complete", "sens_occupation", "sens_job", "sens_clark", "sens_literacy", "sens_six_item", "sens_tenure", "sens_selfemployed"), ]
+specs <- c(sens_base = "Baseline (with pay decile)", sens_nopay = "Without pay decile", sens_pay_complete = "With pay decile, complete pay cases", sens_nopay_complete = "Without pay decile, complete pay cases",
+  sens_occupation = "Adding occupation", sens_job = "Adding all job characteristics", sens_clark = "Adding job characteristics, health, partner and children",
+  sens_literacy = "Literacy instead of numeracy", sens_six_item = "6-item trait scales", sens_tenure = "Adding tenure", sens_selfemployed = "Including the self-employed")
+rows <- lapply(names(specs), function(b) { u <- SB[SB$block == b & SB$outcome == o, ]
+  data.frame(Specification = specs[[b]], Countries = length(unique(u$country)), t(sapply(traits, function(v) { x <- u[u$var == v, ]; sprintf("%d (%s)", sum(x$p < .05 & x$estimate > 0), pp(mean(x$estimate))) })), check.names = FALSE) })
+lgv <- NLv[NLv$spec == "logit_very_satisfied", ]
+rows[[length(rows) + 1]] <- data.frame(Specification = "Logit, average marginal effects", Countries = length(unique(lgv$country)), t(sapply(traits, function(v) { x <- lgv[lgv$var == v, ]; sprintf("%d (%s)", sum(x$p < .05 & x$estimate > 0), pp(mean(x$estimate))) })), check.names = FALSE)
+tab <- do.call(rbind, rows); names(tab)[3:7] <- tl[traits]
+fin(kb(tab, row.names = FALSE, align = "lrccccc"), size = 7.5, wrap = list(`1` = "5.5cm"), "Countries with a significantly positive coefficient on 'extremely satisfied' at the 5% level, with the mean coefficient across countries in percentage points in parentheses. Weighted least squares (linear probability model) unless stated. Job characteristics: occupation, contract, weekly hours, firm size, sector, supervisory duties and tenure. Health: self-rated (5 categories); partner: lives with a spouse or partner; children: has children.")
+```
+
+```{r}
+#| label: tbl-med-adj
+#| tbl-cap: !expr 'tcap(20, "Causal mediation: countries with a significant indirect effect after Benjamini-Hochberg adjustment")'
+tab <- data.frame(Mediator = unname(ml), Countries = sapply(names(ml), function(m) nmed(m, "EMOS")), check.names = FALSE)
+for (v in traits) tab[[tl[[v]]]] <- sapply(names(ml), function(m) sprintf("%d+ / %d−", nposq(m, v), nnegq(m, v)))
+fin(kb(tab, row.names = FALSE, align = "lrccccc"), wrap = list(`1` = "4.5cm"), "Counterpart of Table 3: number of countries in which the ACME on the probability of being extremely satisfied is significantly positive / negative after Benjamini–Hochberg adjustment across countries and traits within each mediator.")
+```
+
+```{r}
+#| label: tbl-perc-adj
+#| tbl-cap: !expr 'tcap(21, "Traits and reported job conditions: counts after Benjamini-Hochberg adjustment")'
+cntq <- function(x) paste0(sum(x$q < .05 & x$estimate < 0), " / ", sum(x$q < .05 & x$estimate > 0))
+tab <- do.call(rbind, lapply(conds, function(k) { p <- perc(k); a <- actsel(k); px <- perc(k, "EXTR"); ax <- actsel(k, "EXTR")
+  data.frame(Condition = cl[[k]], Countries = nrow(p), `ES: deviation (− / +)` = cntq(p), `ES: group mean (− / +)` = cntq(a),
+    `E: deviation (− / +)` = cntq(px), `E: group mean (− / +)` = cntq(ax), check.names = FALSE) }))
+fin(kb(tab, row.names = FALSE, align = "lrcccc"), "Counterpart of Table A15: number of countries with a significantly negative / positive coefficient after Benjamini–Hochberg adjustment across countries and traits within each outcome.")
+```
+
+```{r}
+brk(FALSE)
 ```

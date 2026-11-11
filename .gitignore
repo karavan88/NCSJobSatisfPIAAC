@@ -21,3 +21,6 @@ papers/job_satisfaction/manuscript/.quarto/
 .Rhistory
 .RData
 .Rproj.user/
+
+# Backups of earlier results
+papers/job_satisfaction/results/*_prev/

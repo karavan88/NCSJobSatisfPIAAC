@@ -51,9 +51,10 @@ md <- rd("mediation")
 if (length(md)) {
   m <- do.call(rbind, lapply(md, `[[`, "est")); pr <- strsplit(m$term, "|", fixed = TRUE)
   m$kind <- sapply(pr, `[`, 1); m$mediator <- sapply(pr, `[`, 2); m$var <- sapply(pr, `[`, 3)
-  m$q <- ave(m$p, paste(m$kind, m$mediator), FUN = function(p) if (all(is.na(p))) p else bh(p))
+  m$q <- ave(m$p, paste(m$outcome, m$kind, m$mediator), FUN = function(p) if (all(is.na(p))) p else bh(p))
   S$mediation <- m
   S$med_rho <- do.call(rbind, lapply(md, `[[`, "rho"))
+  S$med_coefs <- do.call(rbind, lapply(md, `[[`, "coefs"))
   S$med_grid <- do.call(rbind, lapply(md, `[[`, "grid"))
   S$med_info <- list(sims = md[[1]]$sims, rho_sims = md[[1]]$rho_sims, version = md[[1]]$mediation_version,
                      additivity = max(abs(unlist(lapply(md, `[[`, "additivity")))))
@@ -77,7 +78,7 @@ S$condition_means <- do.call(rbind, lapply(S$info$country, function(k) {
 S$desc <- do.call(rbind, lapply(S$info$country, function(k) {
   d <- prepare(raw[[k]], k); s <- d[d$core_ok, ]; w <- s$SPFWT0
   data.frame(country = k, n = nrow(s), women = wm(s$gender == 2, w), tertiary = wm(s$EDCAT6_TC1 %in% 4:6, w),
-    numeracy = wm(rowMeans(as.matrix(s[paste0("PVNUM", 1:10)])), w), satisfaction = wm(s$satisfaction_score, w),
+    numeracy = wm(rowMeans(as.matrix(s[paste0("PVNUM", 1:10)])), w), satisfaction = wm(s$satisfaction_score, w), very_satisfied = wm(s$very_satisfied, w),
     not_satisfied = wm(s$not_satisfied, w), pay_released = has_wage_deciles(s), extended = has_extended(s),
     time_pressure = wm(s$time_pressure_raw[s$time_pressure_miss == 0], w[s$time_pressure_miss == 0]),
     autonomy = wm(s$autonomy_raw[s$autonomy_miss == 0], w[s$autonomy_miss == 0]),
